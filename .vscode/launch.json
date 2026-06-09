@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "FdwAnalyticsEngineApplication",
+            "request": "launch",
+            "mainClass": "com.chriscodecc.fdw_analytics_engine.FdwAnalyticsEngineApplication",
+            "projectName": "fdw-analytics-engine"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot App",
+            "request": "launch",
+            "mainClass": "com.chriscodecc.fdwanalyticsengine.FdwAnalyticsEngineApplication",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
