@@ -6,14 +6,14 @@
             "name": "FdwAnalyticsEngineApplication",
             "request": "launch",
             "mainClass": "com.chriscodecc.fdw_analytics_engine.FdwAnalyticsEngineApplication",
-            "projectName": "fdw-analytics-engine"
-        },
-        {
-            "type": "java",
-            "name": "Spring Boot App",
-            "request": "launch",
-            "mainClass": "com.chriscodecc.fdwanalyticsengine.FdwAnalyticsEngineApplication",
-            "envFile": "${workspaceFolder}/.env"
+            "projectName": "fdw-analytics-engine",
+            "env": {
+                "DB_HOST": "localhost",
+                "DB_PORT": "5433",
+                "DB_NAME": "FinDataWarehouseDB",
+                "DB_USER": "python_dbuser",
+                "DB_PASSWORD": "th1s!SmyPy7onpW"
+            }
         }
     ]
 }

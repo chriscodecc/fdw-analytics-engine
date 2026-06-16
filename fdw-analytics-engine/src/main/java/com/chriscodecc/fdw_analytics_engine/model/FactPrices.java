@@ -25,11 +25,11 @@ public class FactPrices {
 
     @ManyToOne
     @JoinColumn(name = "date_id")
-    private DimDate dateId;
+    private DimDate dimDate;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
-    private DimCompany companyId;
+    private DimCompany dimCompany;
 
     @Column(name = "close_price")
     private BigDecimal closePrice;

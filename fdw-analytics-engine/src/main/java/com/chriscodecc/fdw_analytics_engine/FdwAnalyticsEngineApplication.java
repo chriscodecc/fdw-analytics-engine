@@ -1,15 +1,13 @@
 package com.chriscodecc.fdw_analytics_engine;
 
+import java.math.BigDecimal;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-
-import com.chriscodecc.fdw_analytics_engine.model.DimDate;
-import com.chriscodecc.fdw_analytics_engine.model.FactPrices;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
-import com.chriscodecc.fdw_analytics_engine.repository.DimDateRepository;
-import com.chriscodecc.fdw_analytics_engine.repository.FactPricesRepository;
+import com.chriscodecc.fdw_analytics_engine.service.AnalyticsService;
 
 @SpringBootApplication
 public class FdwAnalyticsEngineApplication {
@@ -19,18 +17,15 @@ public class FdwAnalyticsEngineApplication {
 		SpringApplication.run(FdwAnalyticsEngineApplication.class, args);
 		
 	}
-
+	// docker-compose run --rm data-job python src/main.py
 	@Bean
-	public CommandLineRunner demo(FactPricesRepository repository) {
+	public CommandLineRunner demo(AnalyticsService service) {
 		return (args) -> {
 			System.out.println("--------------------------------------------");
-            System.out.println("SPRING BOOT GESTARTET – STARTE DB-TEST... ");
+            System.out.println("SPRING BOOT GESTARTET - STARTE DB-TEST... ");
             System.out.println("--------------------------------------------");
-
-			repository.findAll().forEach(thisfact -> {
-				System.out.println("Preis gefunden: " + thisfact.getCompanyId().getName() + " ; " + thisfact.getVolume());
-			});
-
+	
+			System.out.println("DAILY_RETURN FOR DAX : " + service.dailyReturn("DAX"));
 			System.out.println("--------------------------------------------");
 		};
 	}
