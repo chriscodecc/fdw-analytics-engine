@@ -1,7 +1,5 @@
 package com.chriscodecc.fdw_analytics_engine;
 
-import java.math.BigDecimal;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,7 +23,7 @@ public class FdwAnalyticsEngineApplication {
             System.out.println("SPRING BOOT GESTARTET - STARTE DB-TEST... ");
             System.out.println("--------------------------------------------");
 	
-			System.out.println("DAILY_RETURN FOR DAX : " + service.dailyReturn("DAX"));
+			System.out.println("SMA ALERT DAX: " + service.simpleMovingAverageAlert("Nikkei225"));
 			System.out.println("--------------------------------------------");
 		};
 	}

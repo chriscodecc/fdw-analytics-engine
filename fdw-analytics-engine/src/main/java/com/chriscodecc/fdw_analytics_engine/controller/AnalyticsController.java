@@ -30,8 +30,14 @@ public class AnalyticsController {
     }
 
     @GetMapping("/threshold-alerts")
-    public String getThresholdAlerts(@RequestParam String param) {
-        return new String();
+    public ResponseEntity<Boolean> getThresholdAlerts(@RequestParam String companySymbol) {
+        return ResponseEntity.ok(analyticsService.checkDailyReturnThreshold(companySymbol));
     }
+
+    @GetMapping("/sma")
+    public ResponseEntity<Boolean> checkSmaAlert(@RequestParam String companySymbol) {
+        return ResponseEntity.ok(analyticsService.simpleMovingAverageAlert(companySymbol));
+    }
+    
     
 }

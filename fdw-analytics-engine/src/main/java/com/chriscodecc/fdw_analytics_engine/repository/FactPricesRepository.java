@@ -22,4 +22,15 @@ public interface FactPricesRepository extends JpaRepository<FactPrices, Long>{
         @Param("companyId") Integer companyId, 
         @Param("date") LocalDate date
     );
+
+    @Query("SELECT f FROM FactPrices f " + 
+          "WHERE f.dimCompany.id = :companyId " + 
+          "AND f.dimDate.fullDate <= :date " + 
+          "AND f.dimDate.fullDate BETWEEN :startDate AND :date")
+    List<FactPrices> findLatesPricesForLastXDays(
+        @Param("companyId") Integer companyId, 
+        @Param("date") LocalDate date, 
+        @Param("startDate") LocalDate startDate);
+
+    Optional<FactPrices> findFirstByDimCompanySymbolOrderByDimDateFullDateDesc(String companySymbol);
 }
