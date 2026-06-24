@@ -26,8 +26,9 @@ public interface FactPricesRepository extends JpaRepository<FactPrices, Long>{
     @Query("SELECT f FROM FactPrices f " + 
           "WHERE f.dimCompany.id = :companyId " + 
           "AND f.dimDate.fullDate <= :date " + 
-          "AND f.dimDate.fullDate BETWEEN :startDate AND :date")
-    List<FactPrices> findLatesPricesForLastXDays(
+          "AND f.dimDate.fullDate BETWEEN :startDate AND :date " + 
+          "ORDER BY f.dimDate.fullDate DESC")
+    List<FactPrices> findLatestPricesForLastPastDays(
         @Param("companyId") Integer companyId, 
         @Param("date") LocalDate date, 
         @Param("startDate") LocalDate startDate);

@@ -1,5 +1,7 @@
 package com.chriscodecc.fdw_analytics_engine;
 
+import java.util.List;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,7 +25,9 @@ public class FdwAnalyticsEngineApplication {
             System.out.println("SPRING BOOT GESTARTET - STARTE DB-TEST... ");
             System.out.println("--------------------------------------------");
 	
-			System.out.println("SMA ALERT DAX: " + service.simpleMovingAverageAlert("Nikkei225"));
+			System.out.println("7 Days volume for NIKKEI225: ");
+		
+			
 			System.out.println("--------------------------------------------");
 		};
 	}

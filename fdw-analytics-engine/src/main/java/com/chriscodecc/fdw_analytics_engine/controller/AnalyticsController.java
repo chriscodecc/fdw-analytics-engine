@@ -38,6 +38,12 @@ public class AnalyticsController {
     public ResponseEntity<Boolean> checkSmaAlert(@RequestParam String companySymbol) {
         return ResponseEntity.ok(analyticsService.simpleMovingAverageAlert(companySymbol));
     }
+
+    @GetMapping("/volume-alert")
+    public ResponseEntity<Boolean> checkVolumeAlert(@RequestParam String companySymbol) {
+        return ResponseEntity.ok(analyticsService.volumeSpikeAlert(companySymbol));
+    }
+    
     
     
 }
