@@ -11,6 +11,7 @@ import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
 import com.chriscodecc.fdw_analytics_engine.model.FactPrices;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
 import com.chriscodecc.fdw_analytics_engine.repository.DimDateRepository;
@@ -40,13 +41,21 @@ public class AnalyticsService {
         this.dimDateRepository = dimDateRepository;
     }
 
-    public BigDecimal dailyReturn(String companySymbol, LocalDate today) throws EntityNotFoundException{
-        
-        Integer companyId = dimCompanyRepository.findBySymbol(companySymbol)
-                                                            .orElseThrow(() -> new EntityNotFoundException("Company not found!"))
-                                                .getId();
+    //#region daily return #########################################################################
+
+    /**
+     * Calculates the daily percentage return for a given company symbol.
+     * Uses the two most recent available prices before the specified date (e.g., skipping weekends).
+     *
+     * @param companySymbol the unique ticker symbol of the company (e.g., "DAX")
+     * @param today the reference date to look back from
+     * @return the daily return as a decimal ratio (e.g., 0.05 for a 5% gain)
+     * @throws EntityNotFoundException if no company matches the provided symbol
+     * @throws DataIntegrityViolationException if fewer than two historical prices are found
+     */
+    public BigDecimal dailyReturn(String companySymbol, LocalDate today) throws EntityNotFoundException{   
+        Integer companyId = findCompanyBySymbol(companySymbol).getId();
     
-        
         List<FactPrices> lastestPrices = factPricesRepository.findLatestPriceBeforeDate(companyId, today);
 
         if(lastestPrices.size() < 2){
@@ -61,10 +70,18 @@ public class AnalyticsService {
         return closeDiff.divide(yesterdaysFactPrices.getClosePrice(), 4, RoundingMode.HALF_EVEN);
     }
 
-    public BigDecimal dailyReturn(String companySymvbol){
-        return dailyReturn(companySymvbol, LocalDate.now());
+    public BigDecimal dailyReturn(String companySymbol){
+        return dailyReturn(companySymbol, LocalDate.now());
     }
-
+    
+    /**
+     * Calculates the daily return and checks if its absolute deviation 
+     * is greater than or equal to the predefined threshold.
+     * 
+     * @param companySymbol the unique ticker symbol of the company (e.g., "DAX")
+     * @param today the reference date for the daily return calculation
+     * @return true if the absolute daily return meets or exceeds the threshold, false otherwise
+     */
     public Boolean checkDailyReturnThreshold(String companySymbol, LocalDate today){
         BigDecimal dailyReturn = dailyReturn(companySymbol, today);
         
@@ -75,11 +92,23 @@ public class AnalyticsService {
         return checkDailyReturnThreshold(companySymbol, LocalDate.now());
     }
 
-    public BigDecimal simpleMovingAverageSeven(String companySymbol, LocalDate today){
-        Integer companyId = dimCompanyRepository.findBySymbol(companySymbol)
-                                                    .orElseThrow(() -> new EntityNotFoundException("Company not found!"))
-                                                .getId();
-        List<FactPrices> historicalPriceData = factPricesRepository.findLatestPricesForLastPastDays(companyId, today, today.minusDays(SMA_PERIOD_DAYS));
+    //#endregion daily Return #########################################################################
+
+    //#region SMA
+
+    /**
+     * Calculates the Simple Moving Average (SMA) of the closing prices
+     * over the configured number of past days (SMA_PERIOD_DAYS).
+     *
+     * @param companySymbol the unique ticker symbol of the company (e.g., "DAX")
+     * @param today the end date of the historical period to calculate the average for
+     * @return the calculated moving average as a BigDecimal
+     * @throws EntityNotFoundException if no company matches the provided symbol
+     * @throws IllegalArgumentException if no historical price data is found for the period
+     */
+    public BigDecimal calculateSma(DimCompany dimComp, LocalDate today){
+
+        List<FactPrices> historicalPriceData = factPricesRepository.findLatestPricesForLastPastDays(dimComp.getId(), today, today.minusDays(SMA_PERIOD_DAYS));
         if(historicalPriceData.isEmpty()){
             throw new IllegalArgumentException();
         }
@@ -93,17 +122,26 @@ public class AnalyticsService {
         return simpleMovingAverage;
     }
 
+    public BigDecimal calculateSma(DimCompany dimCompany){
+        LocalDate today = LocalDate.now();
+        return calculateSma(dimCompany, today);
+    }
+    
+    /**
+     * Compares the SMA to a given date
+     * 
+     * @param companySymbol the unique ticker symbol of the company (e.g., "DAX")
+     * @param today the start day for calculating and comparing the SMA (today if not hand over)
+     * @return 
+     */ 
     public boolean simpleMovingAverageAlert(String companySymbol, LocalDate today){
-        BigDecimal sma = simpleMovingAverageSeven(companySymbol, today);
-        FactPrices factPrices = factPricesRepository.findFirstByDimCompanySymbolOrderByDimDateFullDateDesc(companySymbol)
-                                                        .orElseThrow(() -> new EntityNotFoundException("Company not found!"));
+        DimCompany dimComp = findCompanyBySymbol(companySymbol);
+
+        BigDecimal sma = calculateSma(dimComp, today);
+        FactPrices factPrices = factPricesRepository.findFirstByDimCompanyIdOrderByDimDateFullDateDesc(dimComp.getId())
+                                                        .orElseThrow(() -> new EntityNotFoundException("No prices found for " + dimComp.getName() + " !"));
 
         return factPrices.getLowPrice().compareTo(sma) < 0;
-    }
-
-    public BigDecimal simpleMovingAverageSeven(String companySymbol){
-        LocalDate today = LocalDate.now();
-        return simpleMovingAverageSeven(companySymbol, today);
     }
 
     public boolean simpleMovingAverageAlert(String companySymbol){
@@ -111,11 +149,12 @@ public class AnalyticsService {
         return simpleMovingAverageAlert(companySymbol, today);
     }
 
+    //#endregion SMA #########################################################################
+
     private List<BigDecimal> getVolumeDataIncludingToday(String companySymbol,LocalDate today, long days){
         List<BigDecimal> volumeForPastDays = new ArrayList<>();
-        int companyId = dimCompanyRepository.findBySymbol(companySymbol)
-                                                .orElseThrow(() -> new EntityNotFoundException("Company not found"))
-                                            .getId();
+        int companyId = findCompanyBySymbol(companySymbol).getId();
+        
         List<FactPrices> factPricesList = factPricesRepository.findLatestPricesForLastPastDays(companyId, today, today.minusDays(days));
 
         if(!factPricesList.isEmpty()){
@@ -160,5 +199,9 @@ public class AnalyticsService {
     public boolean volumeSpikeAlert(String companySymbol){
         LocalDate today = LocalDate.now();
         return volumeSpikeAlert(companySymbol, today);
+    }
+
+    private DimCompany findCompanyBySymbol(String companySymbol){
+        return dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
     }
 }

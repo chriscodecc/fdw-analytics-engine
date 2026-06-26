@@ -263,6 +263,7 @@ public class AnalyticsServiceTest {
         historicalFactPrices.add(daxDay7);
     }
 
+    //#region DAILY RETURN
     @Test
     void checkDailyReturnThresholdShouldReturnFalse(){
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
@@ -298,20 +299,22 @@ public class AnalyticsServiceTest {
         });
     }
 
+    //#region SMA
+
     @Test
     void smaDropsBelowThresholdShouldReturnTrue(){
-        when(factPricesRepository.findLatestPricesForLastPastDays(1,todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
-        when(factPricesRepository.findFirstByDimCompanySymbolOrderByDimDateFullDateDesc("DAX")).thenReturn(Optional.of(daxDay1Belove));
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
+        when(factPricesRepository.findLatestPricesForLastPastDays(dimCompanyDAX.getId(),todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
+        when(factPricesRepository.findFirstByDimCompanyIdOrderByDimDateFullDateDesc(dimCompanyDAX.getId())).thenReturn(Optional.of(daxDay1Belove));
 
         assertEquals(true, analyticsService.simpleMovingAverageAlert("DAX", todayDate));
     }
 
     @Test
     void smaStaysAboveThresholdShouldReturnFalse(){
-        when(factPricesRepository.findLatestPricesForLastPastDays(1,todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
-        when(factPricesRepository.findFirstByDimCompanySymbolOrderByDimDateFullDateDesc("DAX")).thenReturn(Optional.of(daxDay1Above));
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
+        when(factPricesRepository.findLatestPricesForLastPastDays(dimCompanyDAX.getId(),todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
+        when(factPricesRepository.findFirstByDimCompanyIdOrderByDimDateFullDateDesc(dimCompanyDAX.getId())).thenReturn(Optional.of(daxDay1Above));
 
         assertEquals(false, analyticsService.simpleMovingAverageAlert("DAX", todayDate));
     }

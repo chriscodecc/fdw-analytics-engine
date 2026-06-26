@@ -34,4 +34,8 @@ public interface FactPricesRepository extends JpaRepository<FactPrices, Long>{
         @Param("startDate") LocalDate startDate);
 
     Optional<FactPrices> findFirstByDimCompanySymbolOrderByDimDateFullDateDesc(String companySymbol);
+
+    Optional<FactPrices> findFirstByDimCompanyIdOrderByDimDateFullDateDesc(Integer companyId);
+
+
 }
