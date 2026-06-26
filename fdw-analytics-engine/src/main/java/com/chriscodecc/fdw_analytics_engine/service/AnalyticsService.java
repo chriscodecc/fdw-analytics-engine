@@ -101,7 +101,7 @@ public class AnalyticsService {
      * Calculates the Simple Moving Average (SMA) of the closing prices
      * over the configured number of past days (SMA_PERIOD_DAYS).
      *
-     * @param companySymbol the unique ticker symbol of the company (e.g., "DAX")
+     * @param dimComp the company entity for which the moving average is calculated
      * @param today the end date of the historical period to calculate the average for
      * @return the calculated moving average as a BigDecimal
      * @throws EntityNotFoundException if no company matches the provided symbol
@@ -133,7 +133,7 @@ public class AnalyticsService {
      * 
      * @param companySymbol the unique ticker symbol of the company (e.g., "DAX")
      * @param today the start day for calculating and comparing the SMA (today if not hand over)
-     * @return 
+     * @return the calculated moving average as a BigDecimal
      */ 
     public boolean simpleMovingAverageAlert(String companySymbol, LocalDate today){
         DimCompany dimComp = findCompanyBySymbol(companySymbol);
@@ -151,7 +151,17 @@ public class AnalyticsService {
     }
 
     //#endregion SMA #########################################################################
+    //#region VOLUME
 
+    /**
+     * Gets the volume data for the past VOLUME_PERIOD_DAYS for the given company.
+     * 
+     * @param dimComp the company entity for which the volume data is fetched
+     * @param today the reference date from which the data is fetched
+     * @param days the time period for which the data is fetched (VOLUME_PERIOD_DAYS)
+     * @return a list containing the historical volume data
+     * @throws IllegalArgumentException if no historical data is available for the period
+     */
     private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp,LocalDate today, long days){
         List<BigDecimal> volumeForPastDays = new ArrayList<>();
         int companyId = dimComp.getId();
@@ -178,6 +188,11 @@ public class AnalyticsService {
         return getVolumeDataIncludingToday(dimComp, today, VOLUME_PERIOD_DAYS);
     }
 
+    /**
+     * Calculates the average volume.
+     * @param historicalVolumeData a list that contains the historical volume data
+     * @return the average volume of the given list as a BigDecimal
+     */
     private BigDecimal averageVolume(List<BigDecimal> historicalVolumeData){
         BigDecimal avgVolume = BigDecimal.ZERO;
         for (BigDecimal volume : historicalVolumeData) {
@@ -186,10 +201,23 @@ public class AnalyticsService {
         return avgVolume.divide(new BigDecimal(historicalVolumeData.size()), 2, RoundingMode.HALF_UP);
     }
 
+    /**
+     * Checks if the current volume constitutes a spike compared to the average.
+     * 
+     * @param currentVolume the calculated volume of the current trading day
+     * @param avgVolume the calculated historical average volume
+     * @return true if the current volume is at least double the average, false otherwise
+     */
     private boolean evaluateVolumeSpike(BigDecimal currentVolumne, BigDecimal avgVolume){
         return currentVolumne.compareTo(avgVolume.multiply(new BigDecimal(2))) >= 0;
     }
 
+    /**
+     * Checks if the current volume is at least double the average.
+     * @param companySymbol the unique ticker symbol of the company (e.g., "DAX")
+     * @param today the reference date from which the calculation starts
+     * @return true if the current volume is at least double the average, false otherwise
+     */
     public boolean volumeSpikeAlert(String companySymbol, LocalDate today){
         List<BigDecimal> historicalVolumeData = getVolumeDataIncludingToday(findCompanyBySymbol(companySymbol), today);
         BigDecimal currentVolume = historicalVolumeData.remove(0);
