@@ -33,6 +33,7 @@ public class AnalyticsService {
 
     private final BigDecimal DAILY_RETURN_THRESHOLD = new BigDecimal(0.1);
     private static int SMA_PERIOD_DAYS = 8;
+    private static int VOLUME_PERIOD_DAYS = 8;
 
 
     public AnalyticsService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository,  DimDateRepository dimDateRepository){
@@ -151,10 +152,10 @@ public class AnalyticsService {
 
     //#endregion SMA #########################################################################
 
-    private List<BigDecimal> getVolumeDataIncludingToday(String companySymbol,LocalDate today, long days){
+    private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp,LocalDate today, long days){
         List<BigDecimal> volumeForPastDays = new ArrayList<>();
-        int companyId = findCompanyBySymbol(companySymbol).getId();
-        
+        int companyId = dimComp.getId();
+
         List<FactPrices> factPricesList = factPricesRepository.findLatestPricesForLastPastDays(companyId, today, today.minusDays(days));
 
         if(!factPricesList.isEmpty()){
@@ -167,13 +168,14 @@ public class AnalyticsService {
         }
     }
 
-    private List<BigDecimal> getVolumeDataIncludingToday(String companySymbol){
+    private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp){
         LocalDate today = LocalDate.now();
-        return getVolumeDataIncludingToday(companySymbol, today, SMA_PERIOD_DAYS);
+        return getVolumeDataIncludingToday(dimComp, today, VOLUME_PERIOD_DAYS
+        );
     }
 
-    private List<BigDecimal> getVolumeDataIncludingToday(String companySymbol, LocalDate today){
-        return getVolumeDataIncludingToday(companySymbol, today, SMA_PERIOD_DAYS);
+    private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp, LocalDate today){
+        return getVolumeDataIncludingToday(dimComp, today, VOLUME_PERIOD_DAYS);
     }
 
     private BigDecimal averageVolume(List<BigDecimal> historicalVolumeData){
@@ -189,7 +191,7 @@ public class AnalyticsService {
     }
 
     public boolean volumeSpikeAlert(String companySymbol, LocalDate today){
-        List<BigDecimal> historicalVolumeData = getVolumeDataIncludingToday(companySymbol, today);
+        List<BigDecimal> historicalVolumeData = getVolumeDataIncludingToday(findCompanyBySymbol(companySymbol), today);
         BigDecimal currentVolume = historicalVolumeData.remove(0);
         BigDecimal avgVolume = averageVolume(historicalVolumeData);
         
