@@ -117,7 +117,7 @@ public class AnalyticsServiceTest {
         daxDay1Belove.setDimDate(dimDateToday);
         daxDay1Belove.setOpenPrice(new BigDecimal("18400.00"));
         daxDay1Belove.setHighPrice(new BigDecimal("18450.00"));
-        daxDay1Belove.setLowPrice(new BigDecimal("18320.00"));
+        daxDay1Belove.setLowPrice(new BigDecimal("16500.00"));
         daxDay1Belove.setClosePrice(new BigDecimal("18386.00"));
         daxDay1Belove.setVolume(1150000L);
 
@@ -126,7 +126,7 @@ public class AnalyticsServiceTest {
         daxDay1Above.setDimDate(dimDateToday);
         daxDay1Above.setOpenPrice(new BigDecimal("18400.00"));
         daxDay1Above.setHighPrice(new BigDecimal("18450.00"));
-        daxDay1Above.setLowPrice(new BigDecimal("18520.00"));
+        daxDay1Above.setLowPrice(new BigDecimal("16600.00"));
         daxDay1Above.setClosePrice(new BigDecimal("18386.00"));
         daxDay1Above.setVolume(1150000L);
 
@@ -299,7 +299,7 @@ public class AnalyticsServiceTest {
         });
     }
 
-    //#region SMA
+    //#region SMA #########################################################################################################################################
 
     @Test
     void smaDropsBelowThresholdShouldReturnTrue(){
@@ -338,6 +338,8 @@ public class AnalyticsServiceTest {
             analyticsService.simpleMovingAverageAlert("DAX", todayDate);
         });
     }
+    
+    //#region VOLUME #########################################################################################################################################
 
     @Test
     void volumeSpikeAlertShouldReturnTrue(){

@@ -23,24 +23,56 @@ public class AnalyticsController {
         this.analyticsService = analyticsService;
     }
     
+    /**
+     * REST endpoint to calculate the daily percentage return for a specific company.
+     * Uses the two most recent available trading prices.
+     *
+     * @param symbol the unique ticker symbol of the company (e.g., "DAX")
+     * @return ResponseEntity containing the daily return as a decimal ratio (e.g., 0.05 for a 5% gain)
+     * @throws EntityNotFoundException (404) if the company symbol is unknown
+     */
     @GetMapping("/daily-return")
     public ResponseEntity<BigDecimal> getDailyReturn(@RequestParam String companySymbol) throws EntityNotFoundException{
         BigDecimal result = analyticsService.dailyReturn(companySymbol);
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/threshold-alerts")
-    public ResponseEntity<Boolean> getThresholdAlerts(@RequestParam String companySymbol) {
+    /**
+     * REST endpoint to check if the daily percentage return exceeds or falls below 
+     * the predefined absolute threshold (10%).
+     *
+     * @param symbol the unique ticker symbol of the company (e.g., "DAX")
+     * @return ResponseEntity containing true if the absolute return meets or exceeds the threshold, false otherwise
+     * @throws EntityNotFoundException (404) if the company symbol is unknown
+     */
+    @GetMapping("/threshold-alert")
+    public ResponseEntity<Boolean> getThresholdAlert(@RequestParam String companySymbol) {
         return ResponseEntity.ok(analyticsService.checkDailyReturnThreshold(companySymbol));
     }
 
+    /**
+     * REST endpoint to check if today's low price of a given company drops below 
+     * the 7-day Simple Moving Average (SMA) by more than 10%.
+     *
+     * @param symbol the unique ticker symbol of the company (e.g., "DAX")
+     * @return ResponseEntity containing true if the low price drops below the threshold, false otherwise
+     * @throws EntityNotFoundException (404) if the company symbol is unknown
+     */
     @GetMapping("/sma")
     public ResponseEntity<Boolean> checkSmaAlert(@RequestParam String companySymbol) {
         return ResponseEntity.ok(analyticsService.simpleMovingAverageAlert(companySymbol));
     }
 
-    @GetMapping("/volume-alert")
-    public ResponseEntity<Boolean> checkVolumeAlert(@RequestParam String companySymbol) {
+    /**
+     * REST emdpoint to check for unusual volume spikes for a specific compnay
+     * 
+     * @param symbol the unique ticker symbol (e.g., "DAX")
+     * @param date the reference date for the analysis (Format: YYYY-MM-DD)
+     * @return ResponseEntity containing true if a spike was detected, false otherwise
+     * @throws EntityNotFoundException (404) if the company symbol is unknown
+     */ 
+    @GetMapping("/volume-spike")
+    public ResponseEntity<Boolean> checkVolumeSpike(@RequestParam String companySymbol) {
         return ResponseEntity.ok(analyticsService.volumeSpikeAlert(companySymbol));
     }
     

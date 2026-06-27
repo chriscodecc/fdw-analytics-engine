@@ -32,6 +32,7 @@ public class AnalyticsService {
     private final DimDateRepository dimDateRepository;
 
     private final BigDecimal DAILY_RETURN_THRESHOLD = new BigDecimal(0.1);
+    private final BigDecimal SMA_THRESHOLD = new BigDecimal(0.10);
     private static int SMA_PERIOD_DAYS = 8;
     private static int VOLUME_PERIOD_DAYS = 8;
 
@@ -111,7 +112,7 @@ public class AnalyticsService {
 
         List<FactPrices> historicalPriceData = factPricesRepository.findLatestPricesForLastPastDays(dimComp.getId(), today, today.minusDays(SMA_PERIOD_DAYS));
         if(historicalPriceData.isEmpty()){
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("No historical data available!");
         }
         BigDecimal simpleMovingAverage = BigDecimal.ZERO;
 
@@ -129,11 +130,11 @@ public class AnalyticsService {
     }
     
     /**
-     * Compares the SMA to a given date
+     * Compares the SMA to the low Price on a given date (today unless otherwise specified) 
      * 
      * @param companySymbol the unique ticker symbol of the company (e.g., "DAX")
      * @param today the start day for calculating and comparing the SMA (today if not hand over)
-     * @return the calculated moving average as a BigDecimal
+     * @return true if the low price falls below the SMA threshold, false otherwise
      */ 
     public boolean simpleMovingAverageAlert(String companySymbol, LocalDate today){
         DimCompany dimComp = findCompanyBySymbol(companySymbol);
@@ -142,7 +143,10 @@ public class AnalyticsService {
         FactPrices factPrices = factPricesRepository.findFirstByDimCompanyIdOrderByDimDateFullDateDesc(dimComp.getId())
                                                         .orElseThrow(() -> new EntityNotFoundException("No prices found for " + dimComp.getName() + " !"));
 
-        return factPrices.getLowPrice().compareTo(sma) < 0;
+        BigDecimal thresholdModifier = BigDecimal.ONE.subtract(SMA_THRESHOLD);
+        BigDecimal smaWithThreshold = sma.multiply(thresholdModifier);
+
+        return factPrices.getLowPrice().compareTo(smaWithThreshold) < 0;
     }
 
     public boolean simpleMovingAverageAlert(String companySymbol){
@@ -234,4 +238,6 @@ public class AnalyticsService {
     private DimCompany findCompanyBySymbol(String companySymbol){
         return dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
     }
+
+    //#endregion VOLUME
 }
