@@ -25,6 +25,9 @@ public class FdwAnalyticsEngineApplication {
 		SpringApplication.run(FdwAnalyticsEngineApplication.class, args);
 		
 	}
+
+	
+
 	// docker-compose run --rm data-job python src/main.py
 	@Bean
 	public CommandLineRunner demo(AnalyticsService service) {
@@ -34,8 +37,7 @@ public class FdwAnalyticsEngineApplication {
             System.out.println("--------------------------------------------");
 	
 			System.out.println("7 Days volume for NIKKEI225: ");
-		
-			System.out.println(analyticsService.simpleMovingAverageAlert("DAX"));
+
 			System.out.println("--------------------------------------------");
 		};
 	}
