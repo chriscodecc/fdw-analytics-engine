@@ -1,0 +1,3 @@
+[submodule "fdw-analytics-engine/FinDataWarehouse"]
+	path = fdw-analytics-engine/FinDataWarehouse
+	url = https://github.com/chriscodecc/FinDataWarehouse.git
