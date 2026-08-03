@@ -36,7 +36,7 @@ git submodule update --init --recursive
 Navigate into the submodule folder and start the PostgreSQL database container:
 
 cd FinDataWarehouse
-docker compose up -d
+docker-compose up -d
 cd ..
 
 This will spin up PostgreSQL 15, initialize the schema (init.sql), and expose port 5432 to your host system.
