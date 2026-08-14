@@ -11,6 +11,7 @@ import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
 import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
 import com.chriscodecc.fdw_analytics_engine.model.FactPrices;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
@@ -239,5 +240,12 @@ public class AnalyticsService {
         return dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
     }
 
-    //#endregion VOLUME
+    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId, LocalDate startDate, LocalDate endDate){
+        return factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(companyId, startDate, endDate);
+    }
+
+    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId){
+        LocalDate today = LocalDate.now();
+        return factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(companyId, today.minusDays(30), today);
+    }
 }
