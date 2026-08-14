@@ -44,8 +44,6 @@ public class AnalyticsService {
         this.dimDateRepository = dimDateRepository;
     }
 
-    //#region daily return #########################################################################
-
     /**
      * Calculates the daily percentage return for a given company symbol.
      * Uses the two most recent available prices before the specified date (e.g., skipping weekends).
@@ -59,14 +57,14 @@ public class AnalyticsService {
     public BigDecimal dailyReturn(String companySymbol, LocalDate today) throws EntityNotFoundException{   
         Integer companyId = findCompanyBySymbol(companySymbol).getId();
     
-        List<FactPrices> lastestPrices = factPricesRepository.findLatestPriceBeforeDate(companyId, today);
+        List<FactPrices> latestPrices = factPricesRepository.findLatestPriceBeforeDate(companyId, today);
 
-        if(lastestPrices.size() < 2){
+        if(latestPrices.size() < 2){
             throw new DataIntegrityViolationException ("Critical error: Data could not be loaded.");
         }
 
-        FactPrices todayFactPrices = lastestPrices.get(0);                
-        FactPrices yesterdaysFactPrices = lastestPrices.get(1);
+        FactPrices todayFactPrices = latestPrices.get(0);                
+        FactPrices yesterdaysFactPrices = latestPrices.get(1);
         
         BigDecimal closeDiff = todayFactPrices.getClosePrice().subtract(yesterdaysFactPrices.getClosePrice());
 
@@ -85,19 +83,15 @@ public class AnalyticsService {
      * @param today the reference date for the daily return calculation
      * @return true if the absolute daily return meets or exceeds the threshold, false otherwise
      */
-    public Boolean checkDailyReturnThreshold(String companySymbol, LocalDate today){
+    public boolean checkDailyReturnThreshold(String companySymbol, LocalDate today){
         BigDecimal dailyReturn = dailyReturn(companySymbol, today);
         
         return dailyReturn.abs().compareTo(DAILY_RETURN_THRESHOLD) >= 0;
     }    
     
-    public Boolean checkDailyReturnThreshold(String companySymbol){
+    public boolean checkDailyReturnThreshold(String companySymbol){
         return checkDailyReturnThreshold(companySymbol, LocalDate.now());
     }
-
-    //#endregion daily Return #########################################################################
-
-    //#region SMA
 
     /**
      * Calculates the Simple Moving Average (SMA) of the closing prices
@@ -155,8 +149,6 @@ public class AnalyticsService {
         return simpleMovingAverageAlert(companySymbol, today);
     }
 
-    //#endregion SMA #########################################################################
-    //#region VOLUME
 
     /**
      * Gets the volume data for the past VOLUME_PERIOD_DAYS for the given company.

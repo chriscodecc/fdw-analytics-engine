@@ -10,8 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> feature/frontend
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -62,7 +66,6 @@ public class AnalyticsServiceTest {
 
     @BeforeEach
     void setUp(){
-
         todayDate = LocalDate.of(2026, 12, 24);
         yesterdayDate = todayDate.minusDays(1);
         dateDay3 = yesterdayDate.minusDays(1); 
@@ -143,7 +146,6 @@ public class AnalyticsServiceTest {
         daxDay1LowerVolume.setLowPrice(new BigDecimal("18320.00"));
         daxDay1LowerVolume.setClosePrice(new BigDecimal("18386.00"));
         daxDay1LowerVolume.setVolume(1000000L); 
-
 
         FactPrices daxDay2 = new FactPrices();
         daxDay2.setDimCompany(dimCompanyDAX);
@@ -259,8 +261,8 @@ public class AnalyticsServiceTest {
         historicalFactPrices.add(daxDay7);
     }
 
-    //#region DAILY RETURN
     @Test
+    @DisplayName("Daily Return Alert: Should return false when price change is below threshold")
     void checkDailyReturnThresholdShouldReturnFalse(){
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
         when(factPricesRepository.findLatestPriceBeforeDate(dimCompanyDAX.getId(), todayDate)).thenReturn(latestPrices);
@@ -269,6 +271,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("Daily Return Alert: Should return true when price change exceeds threshold")
     void checkDailyReturnThresholdShouldReturnTrue(){
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
         when(factPricesRepository.findLatestPriceBeforeDate(dimCompanyDAX.getId(), todayDate)).thenReturn(latestPricesSpike);
@@ -277,6 +280,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("Daily Return Alert: Should throw EntityNotFoundException when company symbol is invalid")
     void checkDailyReturnThresholdShouldThrowEntityNotFoundExc(){
         when(dimCompanyRepository.findBySymbol("WRONG")).thenReturn(Optional.empty());
 
@@ -286,6 +290,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("Daily Return Alert: Should throw DataIntegrityViolationException when historical price data is insufficient")
     void checkDailyReturnThresholdShouldThrowDataIntegrityViolationException(){
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
         when(factPricesRepository.findLatestPriceBeforeDate(dimCompanyDAX.getId(), todayDate)).thenReturn(latestPricesOneElement);
@@ -295,9 +300,8 @@ public class AnalyticsServiceTest {
         });
     }
 
-    //#region SMA #########################################################################################################################################
-
     @Test
+    @DisplayName("SMA Alert: Should return true when Simple Moving Average drops below threshold")
     void smaDropsBelowThresholdShouldReturnTrue(){
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
         when(factPricesRepository.findLatestPricesForLastPastDays(dimCompanyDAX.getId(),todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
@@ -307,6 +311,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("SMA Alert: Should return false when Simple Moving Average remains above threshold")
     void smaStaysAboveThresholdShouldReturnFalse(){
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
         when(factPricesRepository.findLatestPricesForLastPastDays(dimCompanyDAX.getId(),todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
@@ -316,6 +321,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("SMA Alert: Should throw EntityNotFoundException when company symbol is invalid")
     void checksmaShouldReturnEntitiyNotFoundException(){
         when(dimCompanyRepository.findBySymbol("WAX")).thenReturn(Optional.empty());
 
@@ -325,6 +331,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test 
+    @DisplayName("SMA Alert: Should throw IllegalArgumentException when no historical price data is available")
     void smaNoHistoricalDataAvailableShouldThrowIllegalArgumentException(){
         List<FactPrices> emptyList = new ArrayList<>();
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
@@ -335,9 +342,8 @@ public class AnalyticsServiceTest {
         });
     }
     
-    //#region VOLUME #########################################################################################################################################
-
     @Test
+    @DisplayName("Volume Spike Alert: Should return true when current volume significantly exceeds historical average")
     void volumeSpikeAlertShouldReturnTrue(){
         historicalFactPrices.set(0, daxDay1DoubleVolume);
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
@@ -347,6 +353,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("Volume Spike Alert: Should return false when current volume is within normal historical range")
     void volumeSpikeAlertShouldReturnFalse(){
         historicalFactPrices.set(0, daxDay1LowerVolume);
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
@@ -356,10 +363,10 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("Volume Spike Alert: Should throw EntityNotFoundException when company symbol is invalid")
     void volumeSpikeAlertInvalidCompanyShouldThrowEntityNotFoundEx(){
         historicalFactPrices.set(0, daxDay1LowerVolume);
         when(dimCompanyRepository.findBySymbol("WAX")).thenReturn(Optional.empty());
-        //when(factPricesRepository.findLatesPricesForLastXDays(1, todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
         
         assertThrows(EntityNotFoundException.class, () -> {
             analyticsService.volumeSpikeAlert("WAX", todayDate);
@@ -367,6 +374,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("Volume Spike Alert: Should throw IllegalArgumentException when no historical volume data is found")
     void volumeSpikeAlertNoHistoricDataFoundShouldThrowIllegalArgumentEx(){
         historicalFactPrices.set(0, daxDay1LowerVolume);
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
@@ -376,5 +384,4 @@ public class AnalyticsServiceTest {
             analyticsService.volumeSpikeAlert("DAX", todayDate);
         });
     }
-
 }
