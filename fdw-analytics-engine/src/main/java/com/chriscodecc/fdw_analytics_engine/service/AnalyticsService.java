@@ -11,6 +11,7 @@ import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
 import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
 import com.chriscodecc.fdw_analytics_engine.model.FactPrices;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
@@ -42,8 +43,6 @@ public class AnalyticsService {
         this.dimCompanyRepository = dimCompanyRepository;
         this.dimDateRepository = dimDateRepository;
     }
-
-    //#region daily return #########################################################################
 
     /**
      * Calculates the daily percentage return for a given company symbol.
@@ -93,10 +92,6 @@ public class AnalyticsService {
     public Boolean checkDailyReturnThreshold(String companySymbol){
         return checkDailyReturnThreshold(companySymbol, LocalDate.now());
     }
-
-    //#endregion daily Return #########################################################################
-
-    //#region SMA
 
     /**
      * Calculates the Simple Moving Average (SMA) of the closing prices
@@ -153,9 +148,6 @@ public class AnalyticsService {
         LocalDate today = LocalDate.now();
         return simpleMovingAverageAlert(companySymbol, today);
     }
-
-    //#endregion SMA #########################################################################
-    //#region VOLUME
 
     /**
      * Gets the volume data for the past VOLUME_PERIOD_DAYS for the given company.
@@ -239,5 +231,12 @@ public class AnalyticsService {
         return dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
     }
 
-    //#endregion VOLUME
+
+    private List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId, LocalDate startDate, LocalDate endDate){
+        return factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(companyId, startDate, endDate);
+    }
+
+    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId){
+        return findRollingMetricsByCompanyIdAndDateRange(companyId, LocalDate.now().minusDays(30), LocalDate.now());
+    }
 }

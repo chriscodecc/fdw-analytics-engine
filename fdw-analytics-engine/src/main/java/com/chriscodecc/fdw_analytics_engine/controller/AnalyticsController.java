@@ -1,6 +1,7 @@
 package com.chriscodecc.fdw_analytics_engine.controller;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
 import com.chriscodecc.fdw_analytics_engine.service.AnalyticsService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -76,6 +78,10 @@ public class AnalyticsController {
         return ResponseEntity.ok(analyticsService.volumeSpikeAlert(companySymbol));
     }
     
+     @GetMapping("/avg30")
+    public ResponseEntity<List<RollingMetricDTO>> rollingMetricAVG(@RequestParam Long companyId) {
+        return ResponseEntity.ok(analyticsService.findRollingMetricsByCompanyIdAndDateRange(companyId));
+    }
     
     
 }
