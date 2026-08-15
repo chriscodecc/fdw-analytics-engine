@@ -45,13 +45,18 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter{
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
+  
         String requestApiKey = request.getHeader("API_KEY");
 
         if(requestApiKey != null && requestApiKey.equals(apiKey)){
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("ApiKeyUser", null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(auth);
+        } else {
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("ApiKeyUser", null, Collections.emptyList());
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
+
+
         filterChain.doFilter(request, response);
     }
 }

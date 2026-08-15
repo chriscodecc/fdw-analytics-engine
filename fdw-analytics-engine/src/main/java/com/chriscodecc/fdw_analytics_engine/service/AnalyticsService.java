@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,9 @@ public class AnalyticsService {
     private final BigDecimal SMA_THRESHOLD = new BigDecimal(0.10);
     private static int SMA_PERIOD_DAYS = 8;
     private static int VOLUME_PERIOD_DAYS = 8;
+
+    @Autowired
+    private javax.sql.DataSource dataSource;
 
 
     public AnalyticsService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository,  DimDateRepository dimDateRepository){
@@ -177,8 +181,7 @@ public class AnalyticsService {
 
     private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp){
         LocalDate today = LocalDate.now();
-        return getVolumeDataIncludingToday(dimComp, today, VOLUME_PERIOD_DAYS
-        );
+        return getVolumeDataIncludingToday(dimComp, today, VOLUME_PERIOD_DAYS);
     }
 
     private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp, LocalDate today){
@@ -229,7 +232,24 @@ public class AnalyticsService {
     }
 
     private DimCompany findCompanyBySymbol(String companySymbol){
-        return dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
+        //return dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
+        try (var conn = dataSource.getConnection();
+            var stmt = conn.createStatement();
+            var rs = stmt.executeQuery("SELECT pg_postmaster_start_time() AS startzeit, datid FROM pg_stat_database WHERE datname = current_database()")) {
+            if (rs.next()) {
+                System.out.println(">>> JAVA DB STARTZEIT: " + rs.getTimestamp("startzeit") + " | DATID: " + rs.getLong("datid"));
+            }
+        } catch (Exception e) {
+            System.err.println("DB Info Fehler: " + e.getMessage());
+        }
+        DimCompany company = dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
+
+        System.out.println(">>> 2. GEFUNDENE ID AUS ENTITY: " + company.getId());
+        System.out.println(">>> 3. GEFUNDENER NAME: '" + company.getName() + "'");
+        System.out.println(">>> 4. GEFUNDENES SYMBOL: '" + company.getSymbol() + "'");
+
+        
+        return company;
     }
 
     public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId, LocalDate startDate, LocalDate endDate){

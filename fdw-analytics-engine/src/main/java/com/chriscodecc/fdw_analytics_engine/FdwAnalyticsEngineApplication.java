@@ -3,6 +3,7 @@ package com.chriscodecc.fdw_analytics_engine;
 import com.chriscodecc.fdw_analytics_engine.controller.AnalyticsController;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +24,7 @@ public class FdwAnalyticsEngineApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(FdwAnalyticsEngineApplication.class, args);
+	
 		
 	}
 
