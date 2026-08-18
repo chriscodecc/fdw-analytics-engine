@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
+import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricProjection;
 import com.chriscodecc.fdw_analytics_engine.model.FactPrices;
 
 public interface FactPricesRepository extends JpaRepository<FactPrices, Long>{
@@ -38,14 +39,23 @@ public interface FactPricesRepository extends JpaRepository<FactPrices, Long>{
 
     Optional<FactPrices> findFirstByDimCompanyIdOrderByDimDateFullDateDesc(Integer companyId);
 
+
     @Query(nativeQuery = true, value="" + 
-           "SELECT f.company_id, dc.name, dd.full_date, f.close_price, " + 
-           "AVG(f.close_price) OVER (PARTITION BY f.company_id " + 
-           "ORDER BY dd.full_date ROWS BETWEEN 29 PRECEDING AND CURRENT ROW) AS AVG_FOR_ME " + 
-           "FROM fact_prices AS f " +
-           "JOIN dim_date AS dd ON dd.date_id=f.date_id " + 
-           "JOIN dim_company AS dc ON dc.company_id=f.company_id " +
-           "WHERE f.company_id = :companyId AND dd.full_date BETWEEN :startDate AND :endDate " + 
-           "ORDER BY dd.full_date ASC;")
-    List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId, LocalDate startDate, LocalDate enDate);
+           "WITH rolling_data AS (" +  
+                "SELECT f.company_id, dc.name, dd.full_date, f.close_price, " + 
+                        "AVG(f.close_price) OVER (" +
+                            "PARTITION BY f.company_id " + 
+                            "ORDER BY dd.full_date " +
+                            "ROWS BETWEEN 29 PRECEDING AND CURRENT ROW) " + 
+                        "AS avg_for_me " + 
+                "FROM fact_prices f " +
+                "JOIN dim_date dd ON dd.date_id = f.date_id " + 
+                "JOIN dim_company dc ON dc.company_id = f.company_id " +
+                "WHERE f.company_id = :companyId " +
+            ")" +
+            "SELECT company_id, name, full_date, close_price, avg_for_me " +
+            "FROM rolling_data " + 
+            "WHERE full_date BETWEEN :startDate AND :endDate " + 
+            "ORDER BY full_date ASC; ")
+    List<RollingMetricProjection> findRollingMetricsByCompanyIdAndDateRange(Long companyId, LocalDate startDate, LocalDate endDate);
 }   

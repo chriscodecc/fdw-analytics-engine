@@ -1,7 +1,12 @@
 package com.chriscodecc.fdw_analytics_engine.dto;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Immutable projection representing a single trading day's closing price
@@ -13,8 +18,20 @@ import java.time.LocalDate;
  *                       warm-up period (<30 entries), reflects the running average
  *                       over available preceding rows.
  */
-public record RollingMetricDTO(
-        LocalDate priceDate,
-        BigDecimal closePrice,
-        BigDecimal rollingAvg30
-) {} 
+@Getter
+@Setter
+public class RollingMetricDTO{
+        Long companyId;
+        String name;
+        LocalDate priceDate;
+        BigDecimal closePrice;
+        BigDecimal rollingAvg30;
+
+        public RollingMetricDTO(Long companyId,String name, LocalDate date, BigDecimal closePrice, BigDecimal avg){
+                this.companyId = companyId;
+                this.name = name;
+                this.priceDate = date;
+                this.closePrice = closePrice;
+                this.rollingAvg30 = avg;
+        }
+}

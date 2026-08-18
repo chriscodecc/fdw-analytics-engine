@@ -13,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
+import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricProjection;
 import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
 import com.chriscodecc.fdw_analytics_engine.model.FactPrices;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
@@ -233,6 +234,7 @@ public class AnalyticsService {
 
     private DimCompany findCompanyBySymbol(String companySymbol){
         //return dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
+        /**
         try (var conn = dataSource.getConnection();
             var stmt = conn.createStatement();
             var rs = stmt.executeQuery("SELECT pg_postmaster_start_time() AS startzeit, datid FROM pg_stat_database WHERE datname = current_database()")) {
@@ -241,23 +243,33 @@ public class AnalyticsService {
             }
         } catch (Exception e) {
             System.err.println("DB Info Fehler: " + e.getMessage());
-        }
+        } **/
         DimCompany company = dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
-
-        System.out.println(">>> 2. GEFUNDENE ID AUS ENTITY: " + company.getId());
-        System.out.println(">>> 3. GEFUNDENER NAME: '" + company.getName() + "'");
-        System.out.println(">>> 4. GEFUNDENES SYMBOL: '" + company.getSymbol() + "'");
-
         
         return company;
     }
 
     public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId, LocalDate startDate, LocalDate endDate){
-        return factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(companyId, startDate, endDate);
+       List<RollingMetricProjection> rollingMetricProjections = factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(companyId, startDate, endDate);
+       return convertRollingMetricProjectionToDTO(rollingMetricProjections);    
     }
 
     public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId){
-        LocalDate today = LocalDate.now();
-        return factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(companyId, today.minusDays(30), today);
+        LocalDate today = LocalDate.now();   
+        return findRollingMetricsByCompanyIdAndDateRange(companyId, today.minusDays(30), today);
+    }
+
+    private List<RollingMetricDTO> convertRollingMetricProjectionToDTO(List<RollingMetricProjection> rollingMetricProjections){
+        List<RollingMetricDTO> rollingMetricDTOs = new ArrayList<>();
+
+        for (RollingMetricProjection rollingMetricProjection : rollingMetricProjections) {
+            rollingMetricDTOs.add(new RollingMetricDTO(
+                                        rollingMetricProjection.getCompanyId(), 
+                                        rollingMetricProjection.getName(), 
+                                        rollingMetricProjection.getFullDate(), 
+                                        rollingMetricProjection.getClosePrice(),
+                                        rollingMetricProjection.getAvgForMe()));
+        }
+        return rollingMetricDTOs;
     }
 }

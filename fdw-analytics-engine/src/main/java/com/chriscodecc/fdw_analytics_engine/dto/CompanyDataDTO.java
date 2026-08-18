@@ -3,7 +3,6 @@ package com.chriscodecc.fdw_analytics_engine.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.antlr.v4.runtime.misc.NotNull;
 
 import lombok.Getter;
 import lombok.Setter;
