@@ -120,5 +120,5 @@ public class AnalyticsServiceIntegrationTest {
         ).doesNotContainNull();
 
         assertThat(results).isSortedAccordingTo(Comparator.comparing(RollingMetricDTO::getPriceDate));
-    }
+    } // NEW BRANCHASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD!!!!!!!!!!!!!!!!!!!!!!
 }
