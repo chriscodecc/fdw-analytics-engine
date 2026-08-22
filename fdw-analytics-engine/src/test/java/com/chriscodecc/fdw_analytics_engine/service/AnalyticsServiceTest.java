@@ -336,25 +336,15 @@ public class AnalyticsServiceTest {
             analyticsService.simpleMovingAverageAlert("DAX", todayDate);
         });
     }
-    
+
     @Test
-    @DisplayName("Volume Spike Alert: Should return true when current volume significantly exceeds historical average")
-    void volumeSpikeAlertShouldReturnTrue(){
+    @DisplayName("Volume Ratio: Should correctly calculate ratio of today's volume against historical average")
+    void calculateVolumeRatioShouldReturnAccurateBigDecimalRatio(){
         historicalFactPrices.set(0, daxDay1DoubleVolume);
         when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
         when(factPricesRepository.findLatestPricesForLastPastDays(1, todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
-        
-        assertEquals(true, analyticsService.volumeSpikeAlert("DAX", todayDate));
-    }
-
-    @Test
-    @DisplayName("Volume Spike Alert: Should return false when current volume is within normal historical range")
-    void volumeSpikeAlertShouldReturnFalse(){
-        historicalFactPrices.set(0, daxDay1LowerVolume);
-        when(dimCompanyRepository.findBySymbol("DAX")).thenReturn(Optional.of(dimCompanyDAX));
-        when(factPricesRepository.findLatestPricesForLastPastDays(1, todayDate, todayDate.minusDays(8))).thenReturn(historicalFactPrices);
-        
-        assertEquals(false, analyticsService.volumeSpikeAlert("DAX", todayDate));
+        BigDecimal result = analyticsService.calculateAvgVolumeSpike("DAX", todayDate);
+        assertEquals(new BigDecimal("2.15"), result);
     }
 
     @Test
@@ -364,7 +354,7 @@ public class AnalyticsServiceTest {
         when(dimCompanyRepository.findBySymbol("WAX")).thenReturn(Optional.empty());
         
         assertThrows(EntityNotFoundException.class, () -> {
-            analyticsService.volumeSpikeAlert("WAX", todayDate);
+            analyticsService.calculateAvgVolumeSpike("WAX", todayDate);
         });
     }
 
@@ -376,7 +366,7 @@ public class AnalyticsServiceTest {
         when(factPricesRepository.findLatestPricesForLastPastDays(1, todayDate, todayDate.minusDays(8))).thenReturn(new ArrayList<>());
         
         assertThrows(IllegalArgumentException.class, () -> {
-            analyticsService.volumeSpikeAlert("DAX", todayDate);
+            analyticsService.calculateAvgVolumeSpike("DAX", todayDate);
         });
     }
 }

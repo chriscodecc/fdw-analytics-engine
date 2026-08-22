@@ -74,8 +74,8 @@ public class AnalyticsController {
      * @throws EntityNotFoundException (404) if the company symbol is unknown
      */ 
     @GetMapping("/volume-spike")
-    public ResponseEntity<Boolean> checkVolumeSpike(@RequestParam String companySymbol) {
-        return ResponseEntity.ok(analyticsService.volumeSpikeAlert(companySymbol));
+    public ResponseEntity<BigDecimal> checkVolumeSpike(@RequestParam String companySymbol) {
+        return ResponseEntity.ok(analyticsService.calculateAvgVolumeSpike(companySymbol));
     }
     
      @GetMapping("/avg30")

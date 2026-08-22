@@ -32,7 +32,6 @@ public class AnalyticsService {
     
     private final FactPricesRepository factPricesRepository;
     private final DimCompanyRepository dimCompanyRepository;
-    private final DimDateRepository dimDateRepository;
 
     private final BigDecimal DAILY_RETURN_THRESHOLD = new BigDecimal(0.1);
     private final BigDecimal SMA_THRESHOLD = new BigDecimal(0.10);
@@ -43,10 +42,9 @@ public class AnalyticsService {
     private javax.sql.DataSource dataSource;
 
 
-    public AnalyticsService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository,  DimDateRepository dimDateRepository){
+    public AnalyticsService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository){
         this.factPricesRepository = factPricesRepository;
         this.dimCompanyRepository = dimCompanyRepository;
-        this.dimDateRepository = dimDateRepository;
     }
 
     /**
@@ -219,17 +217,17 @@ public class AnalyticsService {
      * @param today the reference date from which the calculation starts
      * @return true if the current volume is at least double the average, false otherwise
      */
-    public boolean volumeSpikeAlert(String companySymbol, LocalDate today){
+    public BigDecimal calculateAvgVolumeSpike(String companySymbol, LocalDate today){
         List<BigDecimal> historicalVolumeData = getVolumeDataIncludingToday(findCompanyBySymbol(companySymbol), today);
         BigDecimal currentVolume = historicalVolumeData.remove(0);
         BigDecimal avgVolume = averageVolume(historicalVolumeData);
         
-        return evaluateVolumeSpike(currentVolume, avgVolume);
+        return currentVolume.divide(avgVolume, 2, RoundingMode.HALF_UP);
     } 
 
-    public boolean volumeSpikeAlert(String companySymbol){
+    public BigDecimal calculateAvgVolumeSpike(String companySymbol){
         LocalDate today = LocalDate.now();
-        return volumeSpikeAlert(companySymbol, today);
+        return calculateAvgVolumeSpike(companySymbol, today);
     }
 
     private DimCompany findCompanyBySymbol(String companySymbol){
@@ -249,12 +247,12 @@ public class AnalyticsService {
         return company;
     }
 
-    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId, LocalDate startDate, LocalDate endDate){
+    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Integer companyId, LocalDate startDate, LocalDate endDate){
        List<RollingMetricProjection> rollingMetricProjections = factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(companyId, startDate, endDate);
        return convertRollingMetricProjectionToDTO(rollingMetricProjections);    
     }
 
-    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Long companyId){
+    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Integer companyId){
         LocalDate today = LocalDate.now();   
         return findRollingMetricsByCompanyIdAndDateRange(companyId, today.minusDays(30), today);
     }

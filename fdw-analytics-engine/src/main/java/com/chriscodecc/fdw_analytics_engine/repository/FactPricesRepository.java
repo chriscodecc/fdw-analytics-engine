@@ -57,5 +57,5 @@ public interface FactPricesRepository extends JpaRepository<FactPrices, Long>{
             "FROM rolling_data " + 
             "WHERE full_date BETWEEN :startDate AND :endDate " + 
             "ORDER BY full_date ASC; ")
-    List<RollingMetricProjection> findRollingMetricsByCompanyIdAndDateRange(Long companyId, LocalDate startDate, LocalDate endDate);
+    List<RollingMetricProjection> findRollingMetricsByCompanyIdAndDateRange(Integer companyId, LocalDate startDate, LocalDate endDate);
 }   

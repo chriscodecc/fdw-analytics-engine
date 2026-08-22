@@ -24,10 +24,10 @@ public class RiskEvaluationResponse {
     BigDecimal sma;
 
     //// Individual Indicator Levels
-    RiskLevel rollingAvgRiskLevel;
-    RiskLevel dailyReturnRiskLevel;
-    RiskLevel volumeSpikeRiskLevel;
-    RiskLevel smaRiskLevel;
+    RiskLevel rollingAvgRiskLevel;  // findRollingMetricsByCompanyIdAndDateRange get size()-1 (latest)
+    RiskLevel dailyReturnRiskLevel; // dailyReturn()
+    RiskLevel volumeSpikeRiskLevel; //calculateAvgVolumeSpike
+    RiskLevel smaRiskLevel;         //calculateSma
 
     // Synthesized Overall Verdict
     RiskLevel overallRiskLevel;
