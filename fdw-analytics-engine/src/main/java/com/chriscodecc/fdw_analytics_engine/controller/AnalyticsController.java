@@ -80,7 +80,7 @@ public class AnalyticsController {
     
      @GetMapping("/avg30")
     public ResponseEntity<List<RollingMetricDTO>> rollingMetricAVG() {
-        return ResponseEntity.ok(analyticsService.findRollingMetricsByCompanyIdAndDateRange(Long.valueOf(1)));
+        return ResponseEntity.ok(analyticsService.findRollingMetricsByCompanyIdAndDateRange("DAX"));
     }
     
     

@@ -1,17 +1,13 @@
 package com.chriscodecc.fdw_analytics_engine.security;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collections;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -24,11 +20,11 @@ import jakarta.servlet.http.HttpServletResponse;
  * Intercepts incoming HTTP requests to validate the presence and correctness 
  * of the required 'API_KEY' header before granting access to secured endpoints.
  */
-@Component
+
 public class ApiKeyAuthenticationFilter extends OncePerRequestFilter{
     
     @Value("${app.api.key}")
-    private String apiKey;
+    private String configuredApiKey;
 
     
     /**
@@ -48,15 +44,18 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter{
   
         String requestApiKey = request.getHeader("API_KEY");
 
-        if(requestApiKey != null && requestApiKey.equals(apiKey)){
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("ApiKeyUser", null, Collections.emptyList());
-            SecurityContextHolder.getContext().setAuthentication(auth);
-        } else {
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("ApiKeyUser", null, Collections.emptyList());
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        if (requestApiKey != null && configuredApiKey != null) {
+            boolean isValid = MessageDigest.isEqual(
+                    requestApiKey.getBytes(StandardCharsets.UTF_8), 
+                    (configuredApiKey.getBytes(StandardCharsets.UTF_8))
+            );
+
+            if(isValid){
+                UsernamePasswordAuthenticationToken auth = 
+                        new UsernamePasswordAuthenticationToken("ApiKeyUser", null, Collections.emptyList());
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
         }
-
-
         filterChain.doFilter(request, response);
     }
 }

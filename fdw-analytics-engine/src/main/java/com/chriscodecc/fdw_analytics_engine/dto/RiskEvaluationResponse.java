@@ -33,4 +33,26 @@ public class RiskEvaluationResponse {
     RiskLevel overallRiskLevel;
     String primaryRiskDriver;           // The dominant trigger (or null/NONE if clean)
     List<String> activeRiskDrivers;     // All drivers exceeding thresholds
+
+    @Override
+    public String toString() {
+        // TODO Auto-generated method stub
+        return "RiskEvaluationResponse{" +
+                "companyId=" + companyId +
+                ", name='" + name + '\'' +
+                ", priceDate=" + priceDate +
+                ", evaluatedAt=" + evaluatedAt +
+                ", rollingAvg=" + rollingAvg +
+                ", dailyReturn=" + dailyReturn +
+                ", volumeSpike=" + volumeSpike +
+                ", sma=" + sma +
+                ", rollingAvgRiskLevel=" + rollingAvgRiskLevel +
+                ", dailyReturnRiskLevel=" + dailyReturnRiskLevel +
+                ", volumeSpikeRiskLevel=" + volumeSpikeRiskLevel +
+                ", smaRiskLevel=" + smaRiskLevel +
+                ", overallRiskLevel=" + overallRiskLevel +
+                ", primaryRiskDriver='" + primaryRiskDriver + '\'' +
+                ", activeRiskDrivers=" + activeRiskDrivers +
+                '}';
+    }
 }

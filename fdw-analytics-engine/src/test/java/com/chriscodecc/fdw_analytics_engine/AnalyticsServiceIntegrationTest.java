@@ -2,14 +2,11 @@ package com.chriscodecc.fdw_analytics_engine;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.format.datetime.DateFormatter;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
@@ -28,10 +25,8 @@ import jakarta.transaction.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -85,18 +80,19 @@ public class AnalyticsServiceIntegrationTest {
     @Sql(scripts = "/db/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "/db/insert_test_prices.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void findRollingMetricsByCompanyIdAndDateRange(){
-        Long companyId = 1L;
+        Integer companyId = 1;
+        String companySymbol = "Nikkei225";
         LocalDate startDate = LocalDate.parse("2026-07-01");
         LocalDate endDate = LocalDate.parse("2026-07-31");
 
-        RollingMetricDTO rmDTO1 = new RollingMetricDTO(companyId, "Nikkei225", startDate, new BigDecimal("100.00"), new BigDecimal("100.00"));
-        RollingMetricDTO rmDTO2 = new RollingMetricDTO(companyId, "Nikkei225", endDate, new BigDecimal("200.00"), new BigDecimal("150.00"));
+        RollingMetricDTO rmDTO1 = new RollingMetricDTO(companyId, companySymbol, startDate, new BigDecimal("100.00"), new BigDecimal("100.00"));
+        RollingMetricDTO rmDTO2 = new RollingMetricDTO(companyId, companySymbol, endDate, new BigDecimal("200.00"), new BigDecimal("150.00"));
         List<RollingMetricDTO> rollingsMetricDTOs = new ArrayList<>();
         rollingsMetricDTOs.add(rmDTO1); 
         rollingsMetricDTOs.add(rmDTO2); 
 
         // Act
-        List<RollingMetricDTO> results = analyticsService.findRollingMetricsByCompanyIdAndDateRange(companyId, startDate, endDate);
+        List<RollingMetricDTO> results = analyticsService.findRollingMetricsByCompanyIdAndDateRange(companySymbol, startDate, endDate);
 
         // Assert
         assertThat(results).hasSize(31);
@@ -120,5 +116,5 @@ public class AnalyticsServiceIntegrationTest {
         ).doesNotContainNull();
 
         assertThat(results).isSortedAccordingTo(Comparator.comparing(RollingMetricDTO::getPriceDate));
-    } // NEW BRANCHASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD!!!!!!!!!!!!!!!!!!!!!!
+    } 
 }

@@ -38,4 +38,5 @@ public enum RiskLevel {
     public boolean isMoreSevereThan(RiskLevel other){
         return this.score > other.score;
     }
+
 }

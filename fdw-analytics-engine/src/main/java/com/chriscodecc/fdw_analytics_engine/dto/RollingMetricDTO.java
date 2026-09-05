@@ -21,17 +21,24 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RollingMetricDTO{
-        Long companyId;
+        Integer companyId;
         String name;
         LocalDate priceDate;
         BigDecimal closePrice;
         BigDecimal rollingAvg30;
 
-        public RollingMetricDTO(Long companyId,String name, LocalDate date, BigDecimal closePrice, BigDecimal avg){
+        public RollingMetricDTO(Integer companyId,String name, LocalDate date, BigDecimal closePrice, BigDecimal avg){
                 this.companyId = companyId;
                 this.name = name;
                 this.priceDate = date;
                 this.closePrice = closePrice;
                 this.rollingAvg30 = avg;
         }
+
+        @Override
+        public String toString() {
+                return "ID: " + companyId + " Name: " + name + " PriceDate: " + priceDate + " ClosePrice: " + closePrice + " RollingAvg: " + rollingAvg30;
+        }
+
+        
 }

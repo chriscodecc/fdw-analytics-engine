@@ -13,14 +13,7 @@ import com.chriscodecc.fdw_analytics_engine.service.AnalyticsService;
 
 @SpringBootApplication
 public class FdwAnalyticsEngineApplication {
-	private final AnalyticsService analyticsService;
-    private final AnalyticsController analyticsController;
     DimCompanyRepository dimCompanyRepository;
-
-    FdwAnalyticsEngineApplication(AnalyticsController analyticsController, AnalyticsService analyticsService) {
-        this.analyticsController = analyticsController;
-        this.analyticsService = analyticsService;
-    }
 
 	public static void main(String[] args) {
 		SpringApplication.run(FdwAnalyticsEngineApplication.class, args);
@@ -32,7 +25,7 @@ public class FdwAnalyticsEngineApplication {
 
 	// docker-compose run --rm data-job python src/main.py
 	@Bean
-	public CommandLineRunner demo(AnalyticsService service) {
+	public CommandLineRunner demo() {
 		return (args) -> {
 			System.out.println("--------------------------------------------");
             System.out.println("SPRING BOOT GESTARTET - STARTE DB-TEST... ");

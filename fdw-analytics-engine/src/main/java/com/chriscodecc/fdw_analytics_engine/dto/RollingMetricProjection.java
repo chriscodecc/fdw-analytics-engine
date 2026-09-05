@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public interface RollingMetricProjection {
-    Long getCompanyId();
+    Integer getCompanyId();
     String getName();
     LocalDate getFullDate();
     BigDecimal getClosePrice();

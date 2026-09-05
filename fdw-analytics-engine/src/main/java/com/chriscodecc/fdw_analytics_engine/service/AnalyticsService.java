@@ -58,9 +58,9 @@ public class AnalyticsService {
      * @throws DataIntegrityViolationException if fewer than two historical prices are found
      */
     public BigDecimal dailyReturn(String companySymbol, LocalDate today) throws EntityNotFoundException{   
-        Integer companyId = findCompanyBySymbol(companySymbol).getId();
+        DimCompany company = findCompanyBySymbol(companySymbol);
     
-        List<FactPrices> latestPrices = factPricesRepository.findLatestPriceBeforeDate(companyId, today);
+        List<FactPrices> latestPrices = factPricesRepository.findLatestPriceBeforeDate(company.getId(), today);
 
         if(latestPrices.size() < 2){
             throw new DataIntegrityViolationException ("Critical error: Data could not be loaded.");
@@ -106,26 +106,38 @@ public class AnalyticsService {
      * @throws EntityNotFoundException if no company matches the provided symbol
      * @throws IllegalArgumentException if no historical price data is found for the period
      */
-    public BigDecimal calculateSma(DimCompany dimComp, LocalDate today){
-
-        List<FactPrices> historicalPriceData = factPricesRepository.findLatestPricesForLastPastDays(dimComp.getId(), today, today.minusDays(SMA_PERIOD_DAYS));
+    public BigDecimal getSMA(String companySymbol, LocalDate today){
+        DimCompany company = findCompanyBySymbol(companySymbol);
+        List<FactPrices> historicalPriceData = factPricesRepository.findLatestPricesForLastPastDays(company.getId(), today, today.minusDays(SMA_PERIOD_DAYS));
         if(historicalPriceData.isEmpty()){
             throw new IllegalArgumentException("No historical data available!");
         }
-        BigDecimal simpleMovingAverage = BigDecimal.ZERO;
+        
+        BigDecimal sum = BigDecimal.ZERO;
 
         for(FactPrices price : historicalPriceData){
-            simpleMovingAverage = simpleMovingAverage.add(price.getClosePrice());
+            sum = sum.add(price.getClosePrice(), MathContext.DECIMAL128);
         }
-        simpleMovingAverage = simpleMovingAverage.divide(new BigDecimal(historicalPriceData.size()), MathContext.DECIMAL128);
+        BigDecimal simpleMovingAverage = sum.divide(BigDecimal.valueOf(historicalPriceData.size()), MathContext.DECIMAL128);
 
         return simpleMovingAverage;
     }
 
+    @Deprecated
     public BigDecimal calculateSma(DimCompany dimCompany){
         LocalDate today = LocalDate.now();
-        return calculateSma(dimCompany, today);
+        return getSMA(dimCompany.getSymbol(), today);
     }
+
+    public BigDecimal calculateRelativeDeviation(BigDecimal actualValue, BigDecimal referenceValue) {
+        if (referenceValue == null || referenceValue.compareTo(BigDecimal.ZERO) == 0 || actualValue == null) {
+            return new BigDecimal("0.00");
+        }
+        return actualValue.subtract(referenceValue)
+                .abs()
+                .divide(referenceValue, MathContext.DECIMAL128);
+    }
+
     
     /**
      * Compares the SMA to the low Price on a given date (today unless otherwise specified) 
@@ -137,7 +149,7 @@ public class AnalyticsService {
     public boolean simpleMovingAverageAlert(String companySymbol, LocalDate today){
         DimCompany dimComp = findCompanyBySymbol(companySymbol);
 
-        BigDecimal sma = calculateSma(dimComp, today);
+        BigDecimal sma = getSMA(companySymbol, today);
         FactPrices factPrices = factPricesRepository.findFirstByDimCompanyIdOrderByDimDateFullDateDesc(dimComp.getId())
                                                         .orElseThrow(() -> new EntityNotFoundException("No prices found for " + dimComp.getName() + " !"));
 
@@ -162,11 +174,11 @@ public class AnalyticsService {
      * @return a list containing the historical volume data
      * @throws IllegalArgumentException if no historical data is available for the period
      */
-    private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp,LocalDate today, long days){
+    private List<BigDecimal> getVolumeDataIncludingToday(String companySymbol,LocalDate today, long days){
+        DimCompany company = findCompanyBySymbol(companySymbol);
         List<BigDecimal> volumeForPastDays = new ArrayList<>();
-        int companyId = dimComp.getId();
 
-        List<FactPrices> factPricesList = factPricesRepository.findLatestPricesForLastPastDays(companyId, today, today.minusDays(days));
+        List<FactPrices> factPricesList = factPricesRepository.findLatestPricesForLastPastDays(company.getId(), today, today.minusDays(days));
 
         if(!factPricesList.isEmpty()){
             for (FactPrices factPrices : factPricesList) {
@@ -178,13 +190,13 @@ public class AnalyticsService {
         }
     }
 
-    private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp){
+    private List<BigDecimal> getVolumeDataIncludingToday(String companySymbol){
         LocalDate today = LocalDate.now();
-        return getVolumeDataIncludingToday(dimComp, today, VOLUME_PERIOD_DAYS);
+        return getVolumeDataIncludingToday(companySymbol, today, VOLUME_PERIOD_DAYS);
     }
 
-    private List<BigDecimal> getVolumeDataIncludingToday(DimCompany dimComp, LocalDate today){
-        return getVolumeDataIncludingToday(dimComp, today, VOLUME_PERIOD_DAYS);
+    private List<BigDecimal> getVolumeDataIncludingToday(String companySymbol, LocalDate today){
+        return getVolumeDataIncludingToday(companySymbol, today, VOLUME_PERIOD_DAYS);
     }
 
     /**
@@ -218,7 +230,7 @@ public class AnalyticsService {
      * @return true if the current volume is at least double the average, false otherwise
      */
     public BigDecimal calculateAvgVolumeSpike(String companySymbol, LocalDate today){
-        List<BigDecimal> historicalVolumeData = getVolumeDataIncludingToday(findCompanyBySymbol(companySymbol), today);
+        List<BigDecimal> historicalVolumeData = getVolumeDataIncludingToday(companySymbol, today);
         BigDecimal currentVolume = historicalVolumeData.remove(0);
         BigDecimal avgVolume = averageVolume(historicalVolumeData);
         
@@ -247,14 +259,15 @@ public class AnalyticsService {
         return company;
     }
 
-    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Integer companyId, LocalDate startDate, LocalDate endDate){
-       List<RollingMetricProjection> rollingMetricProjections = factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(companyId, startDate, endDate);
-       return convertRollingMetricProjectionToDTO(rollingMetricProjections);    
+    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(String companySymbol, LocalDate startDate, LocalDate endDate){
+        DimCompany company = findCompanyBySymbol(companySymbol);
+        List<RollingMetricProjection> rollingMetricProjections = factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(company.getId(), startDate, endDate);
+        return convertRollingMetricProjectionToDTO(rollingMetricProjections);    
     }
 
-    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(Integer companyId){
+    public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(String companySymbol){
         LocalDate today = LocalDate.now();   
-        return findRollingMetricsByCompanyIdAndDateRange(companyId, today.minusDays(30), today);
+        return findRollingMetricsByCompanyIdAndDateRange(companySymbol, today.minusDays(30), today);
     }
 
     private List<RollingMetricDTO> convertRollingMetricProjectionToDTO(List<RollingMetricProjection> rollingMetricProjections){
