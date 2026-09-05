@@ -1,5 +1,6 @@
 package com.chriscodecc.fdw_analytics_engine.config;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -9,6 +10,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.chriscodecc.fdw_analytics_engine.security.ApiKeyAuthenticationFilter;
+
+import jakarta.servlet.FilterRegistration;
 
 /**
  * Global Security Configuration for the analytics engine backend.
@@ -23,6 +26,13 @@ public class SecurityConfig {
 
     public SecurityConfig(ApiKeyAuthenticationFilter apiKeyFilter){
         this.apiKeyFilter = apiKeyFilter;
+    }
+
+    @Bean 
+    public FilterRegistrationBean<ApiKeyAuthenticationFilter> registration(ApiKeyAuthenticationFilter filter) {
+        FilterRegistrationBean<ApiKeyAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     /**
