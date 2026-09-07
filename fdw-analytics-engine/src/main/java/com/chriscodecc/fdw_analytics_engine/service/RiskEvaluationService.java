@@ -1,22 +1,11 @@
 package com.chriscodecc.fdw_analytics_engine.service;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.chriscodecc.fdw_analytics_engine.Exceptions.CompanyNotFoundException;
@@ -27,16 +16,10 @@ import com.chriscodecc.fdw_analytics_engine.model.RiskLevel;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
 import com.chriscodecc.fdw_analytics_engine.repository.FactPricesRepository;
 
-import io.micrometer.common.util.internal.logging.InternalLogLevel;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.val;
-
 @Service
 public class RiskEvaluationService {
-    private final FactPricesRepository factPricesRepository;
     private final DimCompanyRepository dimCompanyRepository;
     private final AnalyticsService analyticsService;
-    private RiskEvaluationResponse riskEvaluationResponse;
 
     // SMA & Return Threshold
     private static final BigDecimal RETURN_THRESHOLD_NORMAL = new BigDecimal("0.02");      // 2%
@@ -53,11 +36,9 @@ public class RiskEvaluationService {
     private static final BigDecimal VOL_THRESHOLD_HIGH = new BigDecimal("1.50");
     private static final BigDecimal VOL_THRESHOLD_CRITICAL = new BigDecimal("2.00");
 
-    public RiskEvaluationService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository, AnalyticsService analyticsService){
-        this.factPricesRepository = factPricesRepository;
+    public RiskEvaluationService(DimCompanyRepository dimCompanyRepository, AnalyticsService analyticsService){
         this.dimCompanyRepository = dimCompanyRepository;    
         this.analyticsService = analyticsService;
-    
     }
 
     public RiskEvaluationResponse culateOverAllRiskLevel(String companySymbol, LocalDate today){
@@ -107,7 +88,7 @@ public class RiskEvaluationService {
         return response; 
     }
 
-    private RiskLevel classifyRisk(BigDecimal value, BigDecimal critical, BigDecimal high, BigDecimal normal){
+    public RiskLevel classifyRisk(BigDecimal value, BigDecimal critical, BigDecimal high, BigDecimal normal){
         if(value == null) {
             throw new IllegalArgumentException("Value is NULL.");
         }

@@ -2,6 +2,8 @@ package com.chriscodecc.fdw_analytics_engine.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,11 +18,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.chriscodecc.fdw_analytics_engine.Exceptions.CompanyNotFoundException;
 import com.chriscodecc.fdw_analytics_engine.dto.RiskEvaluationResponse;
 import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
 import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
@@ -29,10 +34,7 @@ import com.chriscodecc.fdw_analytics_engine.model.RiskLevel;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
 import com.chriscodecc.fdw_analytics_engine.repository.FactPricesRepository;
 
-import jakarta.persistence.EntityNotFoundException;
-
-
-//  mvn test -Dtest=RiskEvaluationTest
+//  mvn test -Dtest=RiskEvaluationServiceTest
 
 @ExtendWith(MockitoExtension.class)
 public class RiskEvaluationServiceTest {
@@ -40,8 +42,6 @@ public class RiskEvaluationServiceTest {
 
     @Mock
     private AnalyticsService analyticsService;
-    @Mock
-    private FactPricesRepository factPricesRepository;
     @Mock
     private DimCompanyRepository dimCompanyRepository;
     @InjectMocks
@@ -204,15 +204,64 @@ public class RiskEvaluationServiceTest {
         });
     }
 
-    /***
     @Test
     void testCompanyNotFound_shouldThrowEntityNotFoundException() {
         when(dimCompanyRepository.findBySymbol(symbol)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> {
+        assertThrows(CompanyNotFoundException.class, () -> {
             riskEvaluationService.culateOverAllRiskLevel(symbol, todayDate);
         });
-    }*/
+    }
+
+    @ParameterizedTest(name = "Active metric {0} should map to {1}")
+    @CsvSource({
+        "0.0199, LOW",     // Below boundary
+        "0.02,   NORMAL",  // Exact lower boundary for NORMAL
+        "0.05,   HIGH",    // Exact lower boundary for HIGH
+        "0.10,   CRITICAL" // Exact lower boundary for CRITICAL
+    })
+    void testActiveThresholdCalculations(BigDecimal value, RiskLevel expected){
+        RiskLevel actual = riskEvaluationService.classifyRisk(
+            value, 
+            new BigDecimal("0.10"), // critical
+            new BigDecimal("0.05"), // high
+            new BigDecimal("0.02")  // normal
+        );
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Passive input (null) should be rejected immediately")
+    void shouldThrowIllegalArgumentExceptionWhenInputIsPassiveOrNull() {
+        assertThrows(IllegalArgumentException.class, () -> 
+            riskEvaluationService.classifyRisk(
+                null, // Passive / non-existent data
+                new BigDecimal("0.10"),
+                new BigDecimal("0.05"),
+                new BigDecimal("0.02")
+            )
+        );
+    }
+
+    @Test
+    void testCalculateOverallRiskLevel_ShouldReturn_LOW(){
+        when(dimCompanyRepository.findBySymbol(symbol)).thenReturn(Optional.of(dimCompany));
+        when(analyticsService.findRollingMetricsByCompanyIdAndDateRange(symbol, todayDate.minusDays(30), todayDate)).thenReturn(avgList);
+        when(analyticsService.dailyReturn(symbol, todayDate)).thenReturn(new BigDecimal("0.01"));
+        when(analyticsService.calculateAvgVolumeSpike(symbol, todayDate)).thenReturn(new BigDecimal("1.01"));
+        when(analyticsService.getSMA(symbol, todayDate)).thenReturn(new BigDecimal("0.01"));
+
+        doReturn(new BigDecimal("0.01")).when(analyticsService).calculateRelativeDeviation(any(), any());
+
+        RiskEvaluationResponse response  = riskEvaluationService.culateOverAllRiskLevel(symbol, todayDate);
+
+        assertEquals(null, response.getActiveRiskDrivers());
+        assertEquals(null, response.getPrimaryRiskDriver());
+    }
+
+
+
 
 
 }
