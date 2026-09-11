@@ -1,4 +1,4 @@
-package com.chriscodecc.fdw_analytics_engine.service;
+package com.chriscodecc.fdw_analytics_engine.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,7 @@ import com.chriscodecc.fdw_analytics_engine.config.SecurityConfig;
 import com.chriscodecc.fdw_analytics_engine.controller.RiskEvaluationController;
 import com.chriscodecc.fdw_analytics_engine.dto.RiskEvaluationResponse;
 import com.chriscodecc.fdw_analytics_engine.security.ApiKeyAuthenticationFilter;
+import com.chriscodecc.fdw_analytics_engine.service.RiskEvaluationService;
 
 @Import({SecurityConfig.class, ApiKeyAuthenticationFilter.class})
 @TestPropertySource(properties = "app.api.key=testKEy123")

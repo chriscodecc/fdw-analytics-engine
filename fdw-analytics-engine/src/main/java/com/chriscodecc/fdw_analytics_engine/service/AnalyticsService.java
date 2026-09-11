@@ -3,6 +3,7 @@ package com.chriscodecc.fdw_analytics_engine.service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +39,16 @@ public class AnalyticsService {
     private static int SMA_PERIOD_DAYS = 8;
     private static int VOLUME_PERIOD_DAYS = 8;
 
+    Clock clock;
+
     @Autowired
     private javax.sql.DataSource dataSource;
 
 
-    public AnalyticsService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository){
+    public AnalyticsService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository, Clock clock){
         this.factPricesRepository = factPricesRepository;
         this.dimCompanyRepository = dimCompanyRepository;
+        this.clock = clock;
     }
 
     /**
@@ -266,7 +270,7 @@ public class AnalyticsService {
     }
 
     public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(String companySymbol){
-        LocalDate today = LocalDate.now();   
+        LocalDate today = LocalDate.now(clock);   
         return findRollingMetricsByCompanyIdAndDateRange(companySymbol, today.minusDays(30), today);
     }
 

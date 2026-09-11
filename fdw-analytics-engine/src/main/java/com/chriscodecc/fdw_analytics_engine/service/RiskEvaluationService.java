@@ -1,6 +1,7 @@
 package com.chriscodecc.fdw_analytics_engine.service;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,7 +15,6 @@ import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
 import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
 import com.chriscodecc.fdw_analytics_engine.model.RiskLevel;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
-import com.chriscodecc.fdw_analytics_engine.repository.FactPricesRepository;
 
 @Service
 public class RiskEvaluationService {
@@ -22,35 +22,36 @@ public class RiskEvaluationService {
     private final AnalyticsService analyticsService;
 
     // SMA & Return Threshold
-    private static final BigDecimal RETURN_THRESHOLD_NORMAL = new BigDecimal("0.02");      // 2%
-    private static final BigDecimal RETURN_THRESHOLD_HIGH = new BigDecimal("0.05");   // 5%
-    private static final BigDecimal RETURN_THRESHOLD_CRITICAL = new BigDecimal("0.10"); // 10% (dein bisheriger SMA_THRESHOLD)
+    private static final BigDecimal RETURN_THRESHOLD_NORMAL = new BigDecimal("0.02");    
+    private static final BigDecimal RETURN_THRESHOLD_HIGH = new BigDecimal("0.05");   
+    private static final BigDecimal RETURN_THRESHOLD_CRITICAL = new BigDecimal("0.10"); 
 
     // RolligAVG Threshold
-    private static final BigDecimal ROLLING_THRESHOLD_NORMAL = new BigDecimal("0.03");      // 2%
-    private static final BigDecimal ROLLING_THRESHOLD_HIGH = new BigDecimal("0.07");   // 7%
-    private static final BigDecimal ROLLING_THRESHOLD_CRITICAL = new BigDecimal("0.15"); // 10% (dein bisheriger SMA_THRESHOLD)
+    private static final BigDecimal ROLLING_THRESHOLD_NORMAL = new BigDecimal("0.03");     
+    private static final BigDecimal ROLLING_THRESHOLD_HIGH = new BigDecimal("0.07");  
+    private static final BigDecimal ROLLING_THRESHOLD_CRITICAL = new BigDecimal("0.15"); 
 
     // Volume Spike Multiplikatoren
     private static final BigDecimal VOL_THRESHOLD_NORMAL = new BigDecimal("1.20");
     private static final BigDecimal VOL_THRESHOLD_HIGH = new BigDecimal("1.50");
     private static final BigDecimal VOL_THRESHOLD_CRITICAL = new BigDecimal("2.00");
 
-    public RiskEvaluationService(DimCompanyRepository dimCompanyRepository, AnalyticsService analyticsService){
+    private final Clock clock;
+
+    public RiskEvaluationService(DimCompanyRepository dimCompanyRepository, AnalyticsService analyticsService, Clock clock){
         this.dimCompanyRepository = dimCompanyRepository;    
         this.analyticsService = analyticsService;
+        this.clock = clock;
     }
 
     public RiskEvaluationResponse culateOverAllRiskLevel(String companySymbol, LocalDate today){
         DimCompany company = dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new CompanyNotFoundException("Company not found: " + companySymbol));
-        
         List<RollingMetricDTO> avgList = analyticsService.findRollingMetricsByCompanyIdAndDateRange(
             company.getSymbol(), today.minusDays(30), today);
                 
         if (avgList.isEmpty()) {
             throw new IllegalArgumentException("No rolling metric data available for company: " + companySymbol);
         }
-
         BigDecimal rollingAvg = avgList.get(avgList.size() - 1).getRollingAvg30();
         BigDecimal dailyReturn = analyticsService.dailyReturn(companySymbol, today);
         BigDecimal volumeSpike = analyticsService.calculateAvgVolumeSpike(companySymbol, today);
@@ -70,11 +71,11 @@ public class RiskEvaluationService {
     }
 
     public RiskEvaluationResponse culateOverAllRiskLevel(String companySymbol){
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         return culateOverAllRiskLevel(companySymbol, today);
     }
 
-    private RiskEvaluationResponse evaluateRiskScore(RiskEvaluationResponse response, BigDecimal rollingAvg, BigDecimal dailyReturn, BigDecimal volumeSpike, BigDecimal sma, BigDecimal todaysClosingPrice) {
+    private RiskEvaluationResponse  evaluateRiskScore(RiskEvaluationResponse response, BigDecimal rollingAvg, BigDecimal dailyReturn, BigDecimal volumeSpike, BigDecimal sma, BigDecimal todaysClosingPrice) {
         response.setRollingAvg(analyticsService.calculateRelativeDeviation(todaysClosingPrice, rollingAvg));
         response.setDailyReturn(dailyReturn);
         response.setVolumeSpike(volumeSpike);

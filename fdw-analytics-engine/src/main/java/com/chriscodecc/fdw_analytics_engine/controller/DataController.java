@@ -1,14 +1,10 @@
 package com.chriscodecc.fdw_analytics_engine.controller;
 
-import javax.xml.crypto.Data;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.chriscodecc.fdw_analytics_engine.dto.CompanyDataDTO;
-import com.chriscodecc.fdw_analytics_engine.model.FactPrices;
-import com.chriscodecc.fdw_analytics_engine.repository.FactPricesRepository;
 import com.chriscodecc.fdw_analytics_engine.service.DataService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
