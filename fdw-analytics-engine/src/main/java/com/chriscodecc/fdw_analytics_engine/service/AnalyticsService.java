@@ -265,6 +265,7 @@ public class AnalyticsService {
 
     public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(String companySymbol, LocalDate startDate, LocalDate endDate){
         DimCompany company = findCompanyBySymbol(companySymbol);
+        System.out.println("DEBUG ####################### " + startDate.toString() + " : " + endDate.toString() + " " + company.getId());
         List<RollingMetricProjection> rollingMetricProjections = factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(company.getId(), startDate, endDate);
         return convertRollingMetricProjectionToDTO(rollingMetricProjections);    
     }
