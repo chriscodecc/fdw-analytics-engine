@@ -44,24 +44,24 @@ public class RiskEvaluationService {
         this.clock = clock;
     }
 
-    public RiskEvaluationResponse culateOverAllRiskLevel(String companySymbol, LocalDate today){
+    public RiskEvaluationResponse culateOverAllRiskLevel(String companySymbol, LocalDate starDate, int period){
         DimCompany company = dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new CompanyNotFoundException("Company not found: " + companySymbol));
         List<RollingMetricDTO> avgList = analyticsService.findRollingMetricsByCompanyIdAndDateRange(
-            company.getSymbol(), today.minusDays(30), today);
-                
+            company.getSymbol(), starDate, period);
+        
         if (avgList.isEmpty()) {
             throw new IllegalArgumentException("No rolling metric data available for company: " + companySymbol);
         }
         BigDecimal rollingAvg = avgList.get(avgList.size() - 1).getRollingAvg30();
-        BigDecimal dailyReturn = analyticsService.dailyReturn(companySymbol, today);
-        BigDecimal volumeSpike = analyticsService.calculateAvgVolumeSpike(companySymbol, today);
-        BigDecimal sma = analyticsService.getSMA(companySymbol, today);
+        BigDecimal dailyReturn = analyticsService.dailyReturn(companySymbol);
+        BigDecimal volumeSpike = analyticsService.calculateAvgVolumeSpike(companySymbol);
+        BigDecimal sma = analyticsService.getSMA(companySymbol);
 
         // 2. Assemble and return the DTO
         RiskEvaluationResponse response = new RiskEvaluationResponse();
         response.setCompanyId(company.getId());
         response.setName(company.getName());
-        response.setEvaluatedAt(today);
+        response.setEvaluatedAt(starDate);
 
         // 3. Map metrics to RiskLevels & calculate overall risk
         response = evaluateRiskScore(response, rollingAvg, dailyReturn, volumeSpike, sma, avgList.get(0).getClosePrice());
@@ -71,9 +71,10 @@ public class RiskEvaluationService {
     }
 
     public RiskEvaluationResponse culateOverAllRiskLevel(String companySymbol){
-        LocalDate today = LocalDate.now(clock);
-        return culateOverAllRiskLevel(companySymbol, today);
+        LocalDate startDate = LocalDate.now(clock);
+        return  culateOverAllRiskLevel(companySymbol, startDate, 30);
     }
+
 
     private RiskEvaluationResponse  evaluateRiskScore(RiskEvaluationResponse response, BigDecimal rollingAvg, BigDecimal dailyReturn, BigDecimal volumeSpike, BigDecimal sma, BigDecimal todaysClosingPrice) {
         response.setRollingAvg(analyticsService.calculateRelativeDeviation(todaysClosingPrice, rollingAvg));

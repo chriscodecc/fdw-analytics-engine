@@ -9,7 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.chriscodecc.fdw_analytics_engine.dto.CompanyDataDTO;
+import com.chriscodecc.fdw_analytics_engine.dto.FactPricesDTO;
 import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
+import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
+import com.chriscodecc.fdw_analytics_engine.model.FactPrices;
 import com.chriscodecc.fdw_analytics_engine.service.AnalyticsService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -61,8 +65,8 @@ public class AnalyticsController {
      * @throws EntityNotFoundException (404) if the company symbol is unknown
      */
     @GetMapping("/sma")
-    public ResponseEntity<Boolean> checkSmaAlert(@RequestParam String companySymbol) {
-        return ResponseEntity.ok(analyticsService.simpleMovingAverageAlert(companySymbol));
+    public ResponseEntity<BigDecimal> checkSmaAlert(@RequestParam String companySymbol) {
+        return ResponseEntity.ok(analyticsService.getSMA(companySymbol));
     }
 
     /**
@@ -78,10 +82,26 @@ public class AnalyticsController {
         return ResponseEntity.ok(analyticsService.calculateAvgVolumeSpike(companySymbol));
     }
     
-     @GetMapping("/avg30")
-    public ResponseEntity<List<RollingMetricDTO>> rollingMetricAVG(@RequestParam String companySymbol) {
-        return ResponseEntity.ok(analyticsService.findRollingMetricsByCompanyIdAndDateRange(companySymbol));
+    @GetMapping("/avg30")
+    public ResponseEntity<List<RollingMetricDTO>> rollingMetricAVG(@RequestParam String companySymbol, @RequestParam Integer period) {
+        if(period == null || period <= 0){
+            period = 30;
+        }
+        return ResponseEntity.ok(analyticsService.findRollingMetricsByCompanyIdAndDateRange(companySymbol, period));
     }
+
+    
+    @GetMapping("/all")
+    public ResponseEntity<List<DimCompany>> getAllCompanys() {
+        return ResponseEntity.ok(analyticsService.getAllCompanys());
+    }
+
+    @GetMapping("/factPrices")
+    public ResponseEntity<List<FactPricesDTO>> getCompanyClosing(@RequestParam String companySymbol,@RequestParam int period) {
+        return ResponseEntity.ok(analyticsService.getCompanyClosing(companySymbol, period));
+    }
+
+
     
     
 }

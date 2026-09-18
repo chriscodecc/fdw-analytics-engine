@@ -25,7 +25,7 @@ public class RiskEvaluationController {
     }
 
     @GetMapping("/risklevel")
-    public ResponseEntity<RiskEvaluationResponse> getRiskLevel(@RequestParam String companySymbol) throws EntityNotFoundException{
+    public ResponseEntity<RiskEvaluationResponse> getRiskLevel(@RequestParam String companySymbol, @RequestParam(required = false, defaultValue = "30") Integer period) throws EntityNotFoundException{
         RiskEvaluationResponse riskEvaluationResponse = riskEvaluationService.culateOverAllRiskLevel(companySymbol);
         if(riskEvaluationResponse == null){
             return ResponseEntity.notFound().build();

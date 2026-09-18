@@ -1,6 +1,7 @@
 package com.chriscodecc.fdw_analytics_engine.service;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +31,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.time.Clock;
+import java.time.Instant;
 
 import static io.restassured.RestAssured.given;
 
@@ -73,6 +76,8 @@ public class AnalyticsServiceIntegrationTest {
     AnalyticsService analyticsService;
     @Autowired 
     DimCompanyRepository dimCompanyRepository;
+
+    int period = 30;
     
     @BeforeEach
     void beforeEach(){
@@ -95,8 +100,8 @@ public class AnalyticsServiceIntegrationTest {
     void findRollingMetricsByCompanyIdAndDateRange_ShouldMapAllFieldsAndCalculateAccurateRollingAverages(){
         Integer companyId = 1;
         String companySymbol = "Nikkei225";
-        LocalDate startDate = LocalDate.parse("2026-07-01");
-        LocalDate endDate = LocalDate.parse("2026-07-31");
+        LocalDate startDate = LocalDate.now(clock);//LocalDate.parse("2026-07-01");
+        LocalDate endDate = startDate.minusDays(period);//LocalDate.parse("2026-07-31");
 
         RollingMetricDTO rmDTO1 = new RollingMetricDTO(companyId, companySymbol, startDate, new BigDecimal("100.00"), new BigDecimal("100.00"));
         RollingMetricDTO rmDTO2 = new RollingMetricDTO(companyId, companySymbol, endDate, new BigDecimal("200.00"), new BigDecimal("150.00"));
@@ -105,7 +110,7 @@ public class AnalyticsServiceIntegrationTest {
         rollingsMetricDTOs.add(rmDTO2); 
 
         // Act
-        List<RollingMetricDTO> results = analyticsService.findRollingMetricsByCompanyIdAndDateRange(companySymbol, startDate, endDate);
+        List<RollingMetricDTO> results = analyticsService.findRollingMetricsByCompanyIdAndDateRange(companySymbol, startDate, period);
 
         // Assert
         assertThat(results).hasSize(31);
@@ -138,7 +143,7 @@ public class AnalyticsServiceIntegrationTest {
         RiskEvaluationResponse reResonse = new RiskEvaluationResponse();
         reResonse.setCompanyId(1);
         reResonse.setName("Nikkei225");
-        reResonse.setEvaluatedAt(LocalDate.now());
+        reResonse.setEvaluatedAt(LocalDate.now(clock));
 
         
         given()
@@ -166,10 +171,9 @@ public class AnalyticsServiceIntegrationTest {
     @Sql(scripts = "/db/insert_test_prices.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void findRollingMetricsByCompanyIdAndDateRange_ShouldMapAllDtoFieldsWithPreservedPrecision(){
         String companySymbol = "Nikkei225";
-        LocalDate startDate = LocalDate.parse("2026-07-01");
-        LocalDate endDate = LocalDate.parse("2026-07-31");
+        LocalDate startDate = LocalDate.now(clock);
 
-        List<RollingMetricDTO> rollingMetricDTOs = analyticsService.findRollingMetricsByCompanyIdAndDateRange(companySymbol,startDate,endDate);
+        List<RollingMetricDTO> rollingMetricDTOs = analyticsService.findRollingMetricsByCompanyIdAndDateRange(companySymbol,startDate, period);
 
         // Verify list is populated
         assertThat(rollingMetricDTOs).isNotEmpty();
@@ -193,6 +197,7 @@ public class AnalyticsServiceIntegrationTest {
     @Sql(scripts = "/db/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "/db/insert_test_prices.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void getRiskLevel_WhenValidSymbolAndDataAvailable_ShouldReturn200AndCalculatedEvaluation(){
+
         RiskEvaluationResponse expectetResponse = new RiskEvaluationResponse();
         expectetResponse.setCompanyId(1);
         expectetResponse.setName("Nikkei225");
@@ -258,6 +263,7 @@ public class AnalyticsServiceIntegrationTest {
                                                     .relaxedHTTPSValidation()
                                                     .header("API_KEY", "OZpAJ)C>2>EBWe9ee<R|f[%RpOucF31")
                                                     .queryParam("companySymbol", "Nikkei225")
+                                                    .queryParam("period", 30)
                                                 .when()
                                                     .get("/api/v1/analytics/avg30") ///api/v1/riskEvaluation/risklevel?companySymbol=DAX
                                                 .then()

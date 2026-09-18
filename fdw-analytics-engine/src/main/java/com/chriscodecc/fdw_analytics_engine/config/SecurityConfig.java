@@ -11,8 +11,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.chriscodecc.fdw_analytics_engine.security.ApiKeyAuthenticationFilter;
 
-import jakarta.servlet.FilterRegistration;
-
 /**
  * Global Security Configuration for the analytics engine backend.
  * Configures stateless machine-to-machine (M2M) authentication using a custom 

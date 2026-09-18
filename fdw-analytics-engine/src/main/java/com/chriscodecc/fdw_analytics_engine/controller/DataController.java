@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.chriscodecc.fdw_analytics_engine.dto.CompanyDataDTO;
+import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
 import com.chriscodecc.fdw_analytics_engine.service.DataService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,7 +31,4 @@ public class DataController {
     public ResponseEntity<CompanyDataDTO> provideCompanyData(@RequestParam String companySymbol) {
         return ResponseEntity.ok(dataService.provideCompanyData(companySymbol));
     }
-    
-
-    
 }
