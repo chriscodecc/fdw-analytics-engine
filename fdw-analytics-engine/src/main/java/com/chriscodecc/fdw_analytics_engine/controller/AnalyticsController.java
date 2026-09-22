@@ -82,6 +82,13 @@ public class AnalyticsController {
         return ResponseEntity.ok(analyticsService.calculateAvgVolumeSpike(companySymbol));
     }
     
+    /**
+     * Retrieves historical rolling metric averages for a specific company over a given time window.
+     *
+     * @param companySymbol the ticker symbol identifying the company (e.g., "AAPL", "SAP")
+     * @param period the analysis window in days (defaults to 30 if null or non-positive)
+     * @return a {@link ResponseEntity} containing a {@link List} of {@link RollingMetricDTO} objects
+     */
     @GetMapping("/avg30")
     public ResponseEntity<List<RollingMetricDTO>> rollingMetricAVG(@RequestParam String companySymbol, @RequestParam Integer period) {
         if(period == null || period <= 0){
@@ -90,12 +97,23 @@ public class AnalyticsController {
         return ResponseEntity.ok(analyticsService.findRollingMetricsByCompanyIdAndDateRange(companySymbol, period));
     }
 
-    
+    /**
+     * Retrieves a list of all tracked companies.
+     *
+     * @return a {@link ResponseEntity} containing a {@link List} of all {@link DimCompany} entities
+     */
     @GetMapping("/all")
     public ResponseEntity<List<DimCompany>> getAllCompanys() {
         return ResponseEntity.ok(analyticsService.getAllCompanys());
     }
 
+    /**
+     * Retrieves closing prices and trading metrics for a company over a specified period.
+     *
+     * @param companySymbol the ticker symbol identifying the company (e.g., "AAPL", "SAP")
+     * @param period the number of past days to fetch price records for
+     * @return a {@link ResponseEntity} containing a {@link List} of {@link FactPricesDTO} objects
+     */
     @GetMapping("/factPrices")
     public ResponseEntity<List<FactPricesDTO>> getCompanyClosing(@RequestParam String companySymbol,@RequestParam int period) {
         return ResponseEntity.ok(analyticsService.getCompanyClosing(companySymbol, period));

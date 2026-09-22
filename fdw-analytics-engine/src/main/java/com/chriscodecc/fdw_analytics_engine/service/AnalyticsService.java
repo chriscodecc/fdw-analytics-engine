@@ -36,7 +36,6 @@ public class AnalyticsService {
     
     private final FactPricesRepository factPricesRepository;
     private final DimCompanyRepository dimCompanyRepository;
-    private final DimDateRepository dimDateRepository;
 
     private final BigDecimal DAILY_RETURN_THRESHOLD = new BigDecimal(0.1);
     private final BigDecimal SMA_THRESHOLD = new BigDecimal(0.10);
@@ -45,14 +44,14 @@ public class AnalyticsService {
 
     Clock clock;
 
+    /**
     @Autowired
-    private javax.sql.DataSource dataSource;
+    private javax.sql.DataSource dataSource; **/
 
 
-    public AnalyticsService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository, DimDateRepository dimDateRepository, Clock clock){
+    public AnalyticsService(FactPricesRepository factPricesRepository, DimCompanyRepository dimCompanyRepository, Clock clock){
         this.factPricesRepository = factPricesRepository;
         this.dimCompanyRepository = dimCompanyRepository;
-        this.dimDateRepository = dimDateRepository;
         this.clock = clock;
     }
 
@@ -270,25 +269,25 @@ public class AnalyticsService {
     }
 
     private DimCompany findCompanyBySymbol(String companySymbol){
-        //return dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
-        /**
-        try (var conn = dataSource.getConnection();
-            var stmt = conn.createStatement();
-            var rs = stmt.executeQuery("SELECT pg_postmaster_start_time() AS startzeit, datid FROM pg_stat_database WHERE datname = current_database()")) {
-            if (rs.next()) {
-                System.out.println(">>> JAVA DB STARTZEIT: " + rs.getTimestamp("startzeit") + " | DATID: " + rs.getLong("datid"));
-            }
-        } catch (Exception e) {
-            System.err.println("DB Info Fehler: " + e.getMessage());
-        } **/
         DimCompany company = dimCompanyRepository.findBySymbol(companySymbol).orElseThrow(() -> new EntityNotFoundException("Company not Found!"));
-        
         return company;
     }
 
+    /**
+     * Retrieves rolling market metrics for a specific company over a calculated historical date range.
+     * <p>
+     * Resolves the company entity by its ticker symbol and fetches metric projections
+     * between {@code (startDate - period days)} and {@code startDate}, mapping the results to DTOs.
+     *
+     * @param companySymbol the unique ticker symbol of the company (e.g., "AAPL", "SAP")
+     * @param startDate the reference end date of the evaluation window
+     * @param period the duration in days defining how far back into the past to query
+     * @return a {@link List} of {@link RollingMetricDTO} containing the mapped time-series metrics
+     * 
+     * @throws EntityNotFoundException if no company matching {@code companySymbol} exists
+     */
     public List<RollingMetricDTO> findRollingMetricsByCompanyIdAndDateRange(String companySymbol, LocalDate startDate, Integer period){
         DimCompany company = findCompanyBySymbol(companySymbol);
-        System.out.println("DEBUG ### " + companySymbol + " " + startDate.toString() + " " + period.toString() + " End: " + startDate.minusDays(period).toString());
         List<RollingMetricProjection> rollingMetricProjections = factPricesRepository.findRollingMetricsByCompanyIdAndDateRange(company.getId(), startDate.minusDays(period), startDate);
 
         return convertRollingMetricProjectionToDTO(rollingMetricProjections);    
@@ -299,6 +298,12 @@ public class AnalyticsService {
         return findRollingMetricsByCompanyIdAndDateRange(companySymbol, today, period);
     }
 
+    /**
+     * Converts a list of database projection entities into transport-ready DTO instances.
+     *
+     * @param rollingMetricProjections the {@link List} of {@link RollingMetricProjection} instances fetched from the repository
+     * @return a {@link List} of {@link RollingMetricDTO} objects containing mapped market metric values
+     */
     private List<RollingMetricDTO> convertRollingMetricProjectionToDTO(List<RollingMetricProjection> rollingMetricProjections){
         List<RollingMetricDTO> rollingMetricDTOs = new ArrayList<>();
 
@@ -317,6 +322,18 @@ public class AnalyticsService {
         return dimCompanyRepository.findAll();
     }
 
+    /**
+     * Retrieves the historical closing prices for a company over a specified number of past days.
+     * <p>
+     * Resolves the company entity by its ticker symbol, determines the reference date via the configured {@link Clock},
+     * queries the repository for price records within the date window, and maps the entities to DTOs.
+     *
+     * @param companySymbol the unique ticker symbol of the company (e.g., "AAPL", "SAP")
+     * @param days the number of days to look back from today
+     * @return a {@link List} of {@link FactPricesDTO} containing the historical closing price data
+     * 
+     * @throws EntityNotFoundException if no company matching {@code companySymbol} exists
+     */
     public List<FactPricesDTO> getCompanyClosing(String companySymbol, int days) {
         DimCompany company = findCompanyBySymbol(companySymbol);
         LocalDate today = LocalDate.now(clock);

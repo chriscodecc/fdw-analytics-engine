@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
+import com.chriscodecc.fdw_analytics_engine.Exceptions.CompanyNotFoundException;
+import com.chriscodecc.fdw_analytics_engine.config.ClockConfig;
 import com.chriscodecc.fdw_analytics_engine.dto.CompanyDataDTO;
 import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
 import com.chriscodecc.fdw_analytics_engine.model.DimDate;
@@ -27,6 +32,7 @@ import com.chriscodecc.fdw_analytics_engine.repository.FactPricesRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
+@Import(ClockConfig.class)
 public class DataServiceTest {
 
     DataService dataService;
@@ -44,9 +50,12 @@ public class DataServiceTest {
     LocalDate todayDate;
     FactPrices priceRecord2;
 
+    @Autowired 
+    Clock clock;
+
     @BeforeEach
     void setUp(){
-        dataService = new DataService(factPricesRepository, dimCompanyRepository);
+        dataService = new DataService(factPricesRepository, dimCompanyRepository, clock);
 
         symbol = "AAPL";
         days = 7;
@@ -141,11 +150,11 @@ public class DataServiceTest {
     }
 
     @Test
-    @DisplayName("Provide Company Data: Should throw EntityNotFoundException when company symbol is invalid")
+    @DisplayName("Provide Company Data: Should throw CompanyNotFoundException when company symbol is invalid")
     void provideCompanyData_withWrongCompanySymbol_shouldThrowEntityNotFoundException(){
         when(dimCompanyRepository.findBySymbol("WRONG")).thenReturn(Optional.empty());
         
-        assertThrows(EntityNotFoundException.class, () -> {
+        assertThrows(CompanyNotFoundException.class, () -> {
             dataService.provideCompanyData("WRONG", todayDate, days);
         });
     }

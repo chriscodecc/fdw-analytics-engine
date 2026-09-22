@@ -10,6 +10,12 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * JPA entity representing the date dimension table in the star schema.
+ * <p>
+ * Deconstructs calendar dates into discrete temporal attributes (day, month, year)
+ * to facilitate time-series aggregation and historical slicing across market facts.
+ */
 @Setter
 @Getter
 @Entity

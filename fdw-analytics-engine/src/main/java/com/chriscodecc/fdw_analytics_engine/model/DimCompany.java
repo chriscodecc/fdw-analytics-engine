@@ -12,6 +12,12 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * JPA entity representing the company dimension table in the star schema.
+ * <p>
+ * Stores corporate master data and classification attributes including ticker symbols,
+ * company name, country of origin, and industry sector to support analytical segmentation.
+ */
 @Getter
 @Setter
 @Entity

@@ -13,6 +13,12 @@ import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * JPA entity representing the central fact table in the star schema for daily stock market prices.
+ * <p>
+ * Stores OHLCV (Open, High, Low, Close, Volume) market data linked to dimension entities
+ * for calendar dates ({@link DimDate}) and tracked corporations ({@link DimCompany}).
+ */
 @Getter
 @Setter
 @Entity

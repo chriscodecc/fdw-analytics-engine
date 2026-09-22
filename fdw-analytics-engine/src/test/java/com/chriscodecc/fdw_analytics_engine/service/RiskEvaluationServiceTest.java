@@ -36,6 +36,7 @@ import com.chriscodecc.fdw_analytics_engine.dto.RollingMetricDTO;
 import com.chriscodecc.fdw_analytics_engine.model.DimCompany;
 import com.chriscodecc.fdw_analytics_engine.model.DimDate;
 import com.chriscodecc.fdw_analytics_engine.model.RiskLevel;
+import com.chriscodecc.fdw_analytics_engine.model.RiskThresholds;
 import com.chriscodecc.fdw_analytics_engine.repository.DimCompanyRepository;
 
 //  mvn test -Dtest=RiskEvaluationServiceTest
@@ -236,11 +237,10 @@ public class RiskEvaluationServiceTest {
         "0.10,   CRITICAL" // Exact lower boundary for CRITICAL
     })
     void testActiveThresholdCalculations(BigDecimal value, RiskLevel expected){
+        RiskThresholds riskThresholds = new RiskThresholds(new BigDecimal("0.10"), new BigDecimal("0.05"), new BigDecimal("0.02") );
         RiskLevel actual = riskEvaluationService.classifyRisk(
             value, 
-            new BigDecimal("0.10"), // critical
-            new BigDecimal("0.05"), // high
-            new BigDecimal("0.02")  // normal
+            riskThresholds
         );
 
         assertEquals(expected, actual);
@@ -249,12 +249,11 @@ public class RiskEvaluationServiceTest {
     @Test
     @DisplayName("Passive input (null) should be rejected immediately")
     void shouldThrowIllegalArgumentExceptionWhenInputIsPassiveOrNull() {
+        RiskThresholds riskThresholds = new RiskThresholds(new BigDecimal("0.10"), new BigDecimal("0.05"), new BigDecimal("0.02") );
         assertThrows(IllegalArgumentException.class, () -> 
             riskEvaluationService.classifyRisk(
                 null, // Passive / non-existent data
-                new BigDecimal("0.10"),
-                new BigDecimal("0.05"),
-                new BigDecimal("0.02")
+                riskThresholds
             )
         );
     }
