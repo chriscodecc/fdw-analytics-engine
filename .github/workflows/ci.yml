@@ -1,0 +1,29 @@
+name: DevSecOps Pipeline
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    build-and-test:
+        name: Build & Test
+        runs-on: ubuntu-latest
+
+        steps:
+            # 1. Fetches Sourcode from the repository
+        -   name: Sourcecode checkout
+            uses: actions/checkout@v4
+
+            # 2. Install java
+        -   name: Install JDK 21
+            uses: actions/setup-java@v4
+            with:
+                java-version: '21'
+                distribution: 'temurin'
+                cache: maven
+
+            # 3. Runs the local commands in the Cloud
+        -   name: Run tests
+            run: mvn test --batch-mode
