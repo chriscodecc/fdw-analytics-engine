@@ -1,0 +1,66 @@
+
+services:
+  data-job:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    tty: true #Hält den Container offen
+    stdin_open: true # Erlaubt eingaben
+    command: tail -f /dev/null
+    environment: 
+      - PYTHONUNBUFFERED=1
+      - DB_HOST=database               
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
+      - TESTCONTAINERS_RYUK_DISABLED=true
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    
+  database:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432" # host:cotainer
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  db-seeder:
+    image: python:3.11-slim
+    container_name: db_seeder
+    depends_on:
+      database:
+        condition: service_healthy 
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      DB_HOST: database 
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    
+    command: >
+      sh -c "pip install --no-cache-dir -r requirements.txt && python src/main.py"
+      
+volumes:
+  postgres_data:
