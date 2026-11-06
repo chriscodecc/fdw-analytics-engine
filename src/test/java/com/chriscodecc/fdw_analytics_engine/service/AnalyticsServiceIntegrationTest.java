@@ -199,7 +199,7 @@ public class AnalyticsServiceIntegrationTest extends BaseIntegrationTest{
 
         RiskEvaluationResponse actualResponse = given()
                                                     .relaxedHTTPSValidation()
-                                                    .header("API_KEY", "OZpAJ)C>2>EBWe9ee<R|f[%RpOucF31")
+                                                    .header("API_KEY",  System.getenv("APP_API_KEY"))
                                                     .queryParam("companySymbol", "Nikkei225")
                                                 .when()
                                                     .get("/api/v1/riskEvaluation/risklevel") 
@@ -242,7 +242,7 @@ public class AnalyticsServiceIntegrationTest extends BaseIntegrationTest{
 
         List<RollingMetricDTO> actualResponse = given()
                                                     .relaxedHTTPSValidation()
-                                                    .header("API_KEY", "OZpAJ)C>2>EBWe9ee<R|f[%RpOucF31")
+                                                    .header("API_KEY", System.getenv("APP_API_KEY"))
                                                     .queryParam("companySymbol", "Nikkei225")
                                                     .queryParam("period", 30)
                                                 .when()
