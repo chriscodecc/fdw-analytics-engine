@@ -36,5 +36,7 @@ jobs:
                 cache: maven
             # 3. Runs the local commands in the Cloud
         -   name: Run tests
+            env:
+                APP_API_KEY: ${{ secrets.APP_API_KEY }}
             run: mvn test --batch-mode
 
