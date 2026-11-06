@@ -2818,3 +2818,54 @@ TypeError: YahooFinanceClient.fetch_finance_data() missing 1 required positional
 2026-11-04 11:30:19,221 - utils.db - DEBUG - Inserted 2640 rows into staging.
 2026-11-04 11:30:19,395 - utils.db - INFO - DONE! 2481 Datasets saved in fact_prices.
 2026-11-04 11:30:19,395 - __main__ - INFO - === Pipeline finished successfully ===
+2026-11-06 12:46:48,545 - __main__ - INFO - === Start ETL-Pipline for: 2026-11-05 ===
+2026-11-06 12:46:49,294 - extract.api_client - ERROR - Nikkei225 yFinace data are empty 
+2026-11-06 12:46:49,294 - __main__ - WARNING - Skipping Nikkei225: No data found.
+2026-11-06 12:46:49,510 - extract.api_client - ERROR - DAX yFinace data are empty 
+2026-11-06 12:46:49,510 - __main__ - WARNING - Skipping DAX: No data found.
+2026-11-06 12:46:49,926 - extract.api_client - ERROR - SMI yFinace data are empty 
+2026-11-06 12:46:49,926 - __main__ - WARNING - Skipping SMI: No data found.
+2026-11-06 12:46:50,357 - extract.api_client - ERROR - CAC40 yFinace data are empty 
+2026-11-06 12:46:50,357 - __main__ - WARNING - Skipping CAC40: No data found.
+2026-11-06 12:46:50,605 - extract.api_client - ERROR - EuroStoxx50 yFinace data are empty 
+2026-11-06 12:46:50,605 - __main__ - WARNING - Skipping EuroStoxx50: No data found.
+2026-11-06 12:46:50,791 - extract.api_client - ERROR - FTSE100 yFinace data are empty 
+2026-11-06 12:46:50,792 - __main__ - WARNING - Skipping FTSE100: No data found.
+2026-11-06 12:46:50,805 - extract.api_client - ERROR - CAC40 yFinace data are empty 
+2026-11-06 12:46:50,805 - __main__ - WARNING - Skipping CAC40: No data found.
+2026-11-06 12:46:51,901 - extract.api_client - ERROR - HangSeng yFinace data are empty 
+2026-11-06 12:46:51,901 - __main__ - WARNING - Skipping HangSeng: No data found.
+2026-11-06 12:46:52,087 - extract.api_client - ERROR - ShanghaiComposite yFinace data are empty 
+2026-11-06 12:46:52,087 - __main__ - WARNING - Skipping ShanghaiComposite: No data found.
+2026-11-06 12:46:52,295 - extract.api_client - ERROR - Kospi yFinace data are empty 
+2026-11-06 12:46:52,295 - __main__ - WARNING - Skipping Kospi: No data found.
+2026-11-06 12:46:52,501 - extract.api_client - ERROR - Sensex yFinace data are empty 
+2026-11-06 12:46:52,501 - __main__ - WARNING - Skipping Sensex: No data found.
+2026-11-06 12:46:53,019 - extract.api_client - ERROR - Bitcoin yFinace data are empty 
+2026-11-06 12:46:53,020 - __main__ - WARNING - Skipping Bitcoin: No data found.
+2026-11-06 12:46:53,291 - extract.api_client - ERROR - Ethereum yFinace data are empty 
+2026-11-06 12:46:53,291 - __main__ - WARNING - Skipping Ethereum: No data found.
+2026-11-06 12:46:53,476 - extract.api_client - ERROR - Tether yFinace data are empty 
+2026-11-06 12:46:53,477 - __main__ - WARNING - Skipping Tether: No data found.
+2026-11-06 12:46:53,666 - extract.api_client - ERROR - BinanceCoin yFinace data are empty 
+2026-11-06 12:46:53,666 - __main__ - WARNING - Skipping BinanceCoin: No data found.
+2026-11-06 12:46:53,934 - extract.api_client - ERROR - XRP yFinace data are empty 
+2026-11-06 12:46:53,934 - __main__ - WARNING - Skipping XRP: No data found.
+2026-11-06 12:46:54,196 - extract.api_client - ERROR - Cardano yFinace data are empty 
+2026-11-06 12:46:54,197 - __main__ - WARNING - Skipping Cardano: No data found.
+2026-11-06 12:46:54,452 - extract.api_client - ERROR - Solana yFinace data are empty 
+2026-11-06 12:46:54,453 - __main__ - WARNING - Skipping Solana: No data found.
+2026-11-06 12:46:54,658 - extract.api_client - ERROR - Dogecoin yFinace data are empty 
+2026-11-06 12:46:54,659 - __main__ - WARNING - Skipping Dogecoin: No data found.
+2026-11-06 12:46:54,888 - extract.api_client - ERROR - Polkadot yFinace data are empty 
+2026-11-06 12:46:54,888 - __main__ - WARNING - Skipping Polkadot: No data found.
+2026-11-06 12:46:55,080 - extract.api_client - ERROR - Tron yFinace data are empty 
+2026-11-06 12:46:55,080 - __main__ - WARNING - Skipping Tron: No data found.
+2026-11-06 12:46:55,621 - extract.api_client - ERROR - Polygon yFinace data are empty 
+2026-11-06 12:46:55,622 - __main__ - WARNING - Skipping Polygon: No data found.
+2026-11-06 12:46:55,889 - extract.api_client - ERROR - Litecoin yFinace data are empty 
+2026-11-06 12:46:55,889 - __main__ - WARNING - Skipping Litecoin: No data found.
+2026-11-06 12:46:55,906 - utils.db - INFO - Table 'stg_prices' truncated successfully.
+2026-11-06 12:46:55,919 - utils.db - DEBUG - Inserted 7 rows into staging.
+2026-11-06 12:46:56,018 - utils.db - INFO - DONE! 6 Datasets saved in fact_prices.
+2026-11-06 12:46:56,018 - __main__ - INFO - === Pipeline finished successfully ===
