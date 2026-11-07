@@ -1,20 +1,13 @@
 package com.chriscodecc.fdw_analytics_engine.service;
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+
 
 import com.chriscodecc.fdw_analytics_engine.config.BaseIntegrationTest;
 import com.chriscodecc.fdw_analytics_engine.config.ClockConfig;
@@ -44,6 +37,8 @@ import static io.restassured.RestAssured.given;
 
 @Import(ClockConfig.class)
 public class AnalyticsServiceIntegrationTest extends BaseIntegrationTest{
+    @Autowired
+    private org.springframework.core.env.Environment env;
 
     @Autowired 
     Clock clock;
@@ -60,7 +55,9 @@ public class AnalyticsServiceIntegrationTest extends BaseIntegrationTest{
 
     int period = 30;
     
-    @BeforeEach
+
+
+    @BeforeEach 
     void beforeEach(){
         RestAssured.port = port;
         RestAssured.baseURI = "https://localhost";
@@ -199,7 +196,7 @@ public class AnalyticsServiceIntegrationTest extends BaseIntegrationTest{
 
         RiskEvaluationResponse actualResponse = given()
                                                     .relaxedHTTPSValidation()
-                                                    .header("API_KEY",  System.getenv("APP_API_KEY"))
+                                                    .header("API_KEY", env.getProperty("app.api.key"))
                                                     .queryParam("companySymbol", "Nikkei225")
                                                 .when()
                                                     .get("/api/v1/riskEvaluation/risklevel") 
@@ -239,10 +236,10 @@ public class AnalyticsServiceIntegrationTest extends BaseIntegrationTest{
             new BigDecimal("400.0000"),
             new BigDecimal("110.0000000000000000")
         ));
-
+        
         List<RollingMetricDTO> actualResponse = given()
                                                     .relaxedHTTPSValidation()
-                                                    .header("API_KEY", System.getenv("APP_API_KEY"))
+                                                    .header("API_KEY", env.getProperty("app.api.key"))
                                                     .queryParam("companySymbol", "Nikkei225")
                                                     .queryParam("period", 30)
                                                 .when()
