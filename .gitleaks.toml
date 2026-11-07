@@ -1,0 +1,11 @@
+title = "FDW Custom Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "fdw-custom-api-key"
+description = "Hardcoded FDW Application API Key detected"
+# Matches app.api.key = <anything that does NOT start with ${>
+regex = '''app\.api\.key\s*=\s*([^\$\{\s][^\r\n]+)'''
+secretGroup = 1

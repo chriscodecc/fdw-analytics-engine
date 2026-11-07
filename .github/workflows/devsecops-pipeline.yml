@@ -21,7 +21,7 @@ jobs:
 
     build-and-test:
         name: Build & Test
-        
+        needs: [gitleaks-scan]
         runs-on: ubuntu-24.04
         steps:
             # 1. Fetches Sourcode from the repository
