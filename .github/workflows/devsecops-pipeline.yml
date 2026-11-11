@@ -1,3 +1,4 @@
+#main
 env:
   APP_API_KEY: ${{ secrets.APP_API_KEY }}
   SERVER_SSL_KEY_STORE_PASSWORD: ${{ secrets.SSL_ADMIN_PASSWORD }}
