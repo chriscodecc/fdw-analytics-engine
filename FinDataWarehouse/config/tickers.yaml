@@ -1,0 +1,38 @@
+tickers:
+    - Nikkei225
+    - DAX
+    - Dow Jones
+    - SMI
+    - Russell2000
+    - CAC40
+    - EuroStoxx50
+    - FTSE100
+    - CAC40
+    - S&P500
+    - NASDAQ100
+    - NASDAQComposite
+    - Russell2000
+    - HangSeng
+    - ShanghaiComposite
+    - Kospi
+    - Sensex
+    - MSCIWorld
+    - Bitcoin
+    - Ethereum
+    - Tether
+    - BinanceCoin
+    - XRP
+    - Cardano
+    - Solana
+    - Dogecoin
+    - Polkadot
+    - Tron
+    - Polygon
+    - Litecoin
+
+period:
+    use_start_end_date: false
+
+# Start is EARLIER THEN END!!!
+start_date: 2026-07-15
+end_date: 2026-11-04

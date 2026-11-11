@@ -1,0 +1,8 @@
+database:
+  host: database
+  port: 5432
+  name: FinDataWarehouseDB
+
+
+pipline:
+    save_csv: false

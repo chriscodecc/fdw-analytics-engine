@@ -7,13 +7,16 @@
             "request": "launch",
             "mainClass": "com.chriscodecc.fdw_analytics_engine.FdwAnalyticsEngineApplication",
             "projectName": "fdw-analytics-engine",
-            "env": {
+            "envFile": "${workspaceFolder}/.env"
+            
+        }
+    ]
+}
+
+/**"env": {
                 "DB_HOST": "localhost",
                 "DB_PORT": "5433",
                 "DB_NAME": "FinDataWarehouseDB",
                 "DB_USER": "python_dbuser",
                 "DB_PASSWORD": "th1s!SmyPy7onpW"
-            }
-        }
-    ]
-}
+            }**/
