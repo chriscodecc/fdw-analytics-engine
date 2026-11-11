@@ -6,15 +6,16 @@ env:
 name: DevSecOps Pipeline
 on:
     push:
-        branches: [main, devsecops-pipline]
+        branches: [main, devsecops-*]
     pull_request:
-        branches: [main, devsecops-pipline]
+        branches: [main, devsecops-*]
 
 # Top-level default: enforce read-only access 
 permissions:
   contents: read
 
 jobs:
+    #Gate 1
     gitleaks-scan:
         name: Secret Detection (Gitleaks)
         runs-on: ubuntu-24.04
@@ -29,9 +30,28 @@ jobs:
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    trivy-fs-scan:
+        name: Dependency Vulnerability Scan (Trivy FS)
+        needs: [gitleaks-scan]
+        runs-on: ubuntu-24.04
+        steps:
+        -   name: Checkout repository
+            uses: actions/checkout@v4
+
+        -   name: Run Trivy vulnerability scanner in fs mode
+            uses: aquasecurity/trivy-action@0.35.0
+            with:
+                scan-type: 'fs'
+                scan-ref: '.'
+                format: 'table'
+                exit-code: '1'
+                ignore-unfixed: true
+                severity: 'HIGH,CRITICAL'
+
+    # Gate 3
     build-and-test:
         name: Build & Test
-        needs: [gitleaks-scan]
+        needs: [trivy-fs-scan]
         runs-on: ubuntu-24.04
         steps:
             # 1. Fetches Sourcode from the repository
