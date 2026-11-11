@@ -50,20 +50,19 @@ jobs:
                 APP_API_KEY: ${{ secrets.APP_API_KEY }}
             run: mvn test --batch-mode
 
-jobs:
     test-toke-permissions:
         name: Verify Least Privilege Token
         runs-on: ubuntu-24.04
         steps:
-        - name: Attempt Unauthorized Git Push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Testing if GITHUB_TOKEN has write access..."
-          # Configure dummy git identity for the runner
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Attempt to create and push a remote tag
-          git tag test-unauthorized-tag
-          git push origin test-unauthorized-tag
+        -   name: Attempt Unauthorized Git Push
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            run: |
+                echo "Testing if GITHUB_TOKEN has write access..."
+                # Configure dummy git identity for the runner
+                git config user.name "github-actions[bot]"
+                git config user.email "github-actions[bot]@users.noreply.github.com"
+                
+                # Attempt to create and push a remote tag
+                git tag test-unauthorized-tag
+                git push origin test-unauthorized-tag
