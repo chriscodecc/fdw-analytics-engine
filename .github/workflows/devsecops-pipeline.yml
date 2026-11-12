@@ -29,7 +29,8 @@ jobs:
               uses: gitleaks/gitleaks-action@v2
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+    
+    # Gate 2
     trivy-fs-scan:
         name: Dependency Vulnerability Scan (Trivy FS)
         needs: [gitleaks-scan]
@@ -49,9 +50,31 @@ jobs:
                 severity: 'HIGH,CRITICAL'
 
     # Gate 3
+    sast-scan:
+        name: Static Code Analysis (Semgrep SAST)
+        needs: [trivy-fs-scan]
+        runs-on: ubbuntu-24.04
+        container:
+            image: semgrep/semgrep:latest
+        steps: 
+        -   name: Checkout repository
+            uses: actions/checkout@v4
+
+        -   name: Run Semgrep SAST scan (Java, Spring, Python, OWASP)
+            run: >
+                semgrep scan
+                --config p/java
+                --config p/spring
+                --config p/python
+                --config p/owasp-top-ten
+                --error
+                --severity ERROR
+
+
+    # Gate 4
     build-and-test:
         name: Build & Test
-        needs: [trivy-fs-scan]
+        needs: [sast-scan]
         runs-on: ubuntu-24.04
         steps:
             # 1. Fetches Sourcode from the repository
