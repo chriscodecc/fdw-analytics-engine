@@ -53,7 +53,7 @@ jobs:
     sast-scan:
         name: Static Code Analysis (Semgrep SAST)
         needs: [trivy-fs-scan]
-        runs-on: ubbuntu-24.04
+        runs-on: ubuntu-24.04
         container:
             image: semgrep/semgrep:latest
         steps: 
