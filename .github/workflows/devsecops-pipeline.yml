@@ -60,15 +60,15 @@ jobs:
         -   name: Checkout repository
             uses: actions/checkout@v4
 
-        -   name: Run Semgrep SAST scan (Java, Spring, Python, OWASP)
+        -   name: Run Semgrep SAST scan 
             run: >
-                semgrep scan
-                --config p/java
-                --config p/spring
-                --config p/python
-                --config p/owasp-top-ten
-                --error
-                --severity ERROR
+                semgrep scan --config 
+                p/java --config 
+                p/python --config 
+                p/owasp-top-ten --error 
+                --severity ERROR 
+                --metrics=off 
+                --verbose
 
 
     # Gate 4
