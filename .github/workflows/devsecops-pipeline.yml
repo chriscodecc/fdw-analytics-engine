@@ -6,15 +6,16 @@ env:
 name: DevSecOps Pipeline
 on:
     push:
-        branches: [main, devsecops-pipline]
+        branches: [main, devsecops-*]
     pull_request:
-        branches: [main, devsecops-pipline]
+        branches: [main, devsecops-*]
 
 # Top-level default: enforce read-only access 
 permissions:
   contents: read
 
 jobs:
+    #Gate 1
     gitleaks-scan:
         name: Secret Detection (Gitleaks)
         runs-on: ubuntu-24.04
@@ -28,10 +29,53 @@ jobs:
               uses: gitleaks/gitleaks-action@v2
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    # Gate 2
+    trivy-fs-scan:
+        name: Dependency Vulnerability Scan (Trivy FS)
+        needs: [gitleaks-scan]
+        runs-on: ubuntu-24.04
+        steps:
+        -   name: Checkout repository
+            uses: actions/checkout@v4
 
+        -   name: Run Trivy vulnerability scanner in fs mode
+            uses: aquasecurity/trivy-action@0.35.0
+            with:
+                scan-type: 'fs'
+                scan-ref: '.'
+                scanners: 'vuln,license'
+                format: 'table'
+                exit-code: '1'
+                ignore-unfixed: true
+                severity: 'HIGH,CRITICAL'
+
+    # Gate 3
+    sast-scan:
+        name: Static Code Analysis (Semgrep SAST)
+        needs: [trivy-fs-scan]
+        runs-on: ubuntu-24.04
+        container:
+            image: semgrep/semgrep:latest
+        steps: 
+        -   name: Checkout repository
+            uses: actions/checkout@v4
+
+        -   name: Run Semgrep SAST scan 
+            run: >
+                semgrep scan --config 
+                p/java --config 
+                p/python --config 
+                p/owasp-top-ten --error 
+                --severity ERROR 
+                --metrics=off 
+                --verbose
+
+
+    # Gate 4
     build-and-test:
         name: Build & Test
-        needs: [gitleaks-scan]
+        needs: [sast-scan]
         runs-on: ubuntu-24.04
         steps:
             # 1. Fetches Sourcode from the repository
