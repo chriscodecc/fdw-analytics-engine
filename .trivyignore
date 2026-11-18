@@ -1,0 +1,5 @@
+# Risk Acceptance: Upgrading Spring WebMVC requires a breaking migration to Spring Boot 4.
+# We do not use the vulnerable XsltView or Server-Sent Events (SSE) features in this API.
+
+CVE-2026-47884 # exp: 2026-12-18
+CVE-2026-47890 # exp: 2026-12-18
