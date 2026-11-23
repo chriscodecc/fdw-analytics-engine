@@ -1,0 +1,2 @@
+# Blocked by streamlit's pillow<13.0 constraint; internal dashboard processes no untrusted images. Re-evaluate on next streamlit release.
+CVE-2026-112393 
