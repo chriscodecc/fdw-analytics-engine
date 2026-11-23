@@ -9,12 +9,14 @@ from plotly.subplots import make_subplots
 #.\\.venv\Scripts\Activate.ps1
 
 BASE_STR = "/api/v1"
-BASE_URL_RISK = st.secrets["backend"]["base_url"] + BASE_STR + "/riskEvaluation"
-BASE_URL_ANALYTICS = st.secrets["backend"]["base_url"] + BASE_STR + "/analytics"
+BACKEND_HOST = os.getenv("BACKEND_URL", st.secrets["backend"]["base_url"])
+
+BASE_URL_RISK = BACKEND_HOST + BASE_STR + "/riskEvaluation"
+BASE_URL_ANALYTICS = BACKEND_HOST + BASE_STR + "/analytics"
 
 HEADERS = {
     "Content-Type": "application/json; charset=utf-8",
-    "API_KEY": st.secrets["backend"]["api_key"]
+    "API_KEY": os.getenv("BACKEND_API_KEY", st.secrets["backend"]["api_key"])
 }
 
 def get_response(base_url: str, path: str, params: dict | None = None) -> dict | list | float | None:
