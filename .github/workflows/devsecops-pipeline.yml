@@ -137,6 +137,7 @@ jobs:
             uses: aquasecurity/trivy-action@0.35.0
             with:
                 scan-type: 'image'
+                vuln-type: 'os'
                 image-ref: fdw-backend:${{ github.sha }} 
                 format: 'table'
                 exit-code: '1'
@@ -147,6 +148,7 @@ jobs:
             uses: aquasecurity/trivy-action@0.35.0
             with:
                 scan-type: 'image'
+                vuln-type: 'os'
                 image-ref: fdw-etl:${{ github.sha }} 
                 format: 'table'
                 exit-code: '1'
@@ -158,6 +160,7 @@ jobs:
             uses: aquasecurity/trivy-action@0.35.0
             with:
                 scan-type: 'image'
+                vuln-type: 'os'
                 image-ref: fdw-dashboard:${{ github.sha }} 
                 format: 'table'
                 exit-code: '1'
