@@ -93,3 +93,40 @@ jobs:
             env:
                 APP_API_KEY: ${{ secrets.APP_API_KEY }}
             run: mvn test --batch-mode
+
+    # Gate5
+    docker:
+        name: Build Docker Images 
+        needs: [build-and-test]
+        runs-on: ubuntu-24.04
+      
+        steps:
+        -   name: Sourcecode checkout
+            uses: actions/checkout@v4
+            with:
+                submodules: true
+  
+
+        -   name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v4
+
+        -   name: Build and push fwd
+            uses: docker/build-push-action@v7
+            with:
+                context: "."
+                push: false
+                tags: fwd-backend:${{ github.sha }}
+
+        -   name: Build and push FinDataWarehouse
+            uses: docker/build-push-action@v7
+            with:
+                context: "./FinDataWarehouse"
+                push: false
+                tags: fwd-etl:${{ github.sha }}
+
+        -   name: Build and push dashboard
+            uses: docker/build-push-action@v7
+            with:
+                context: "./dashboard"
+                push: false
+                tags: fwd-dashboard:${{ github.sha }}
