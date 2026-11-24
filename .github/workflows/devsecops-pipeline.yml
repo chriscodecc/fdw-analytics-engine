@@ -180,15 +180,13 @@ jobs:
 
         -   name: Start application stack
             env: 
-                APP_API_KEY: "ci-dast-test-key"
                 DB_USER: "ci_user"
                 DB_PASSWORD: "ci_password"
-                SPRING_DATASOURCE_USERNAME: "ci_user"
-                SPRING_DATASOURCE_PASSWORD: "ci_password"
+                DB_NAME: "fdw_db"
+                APP_API_KEY: "ci-dast-test-key"
                 SSL_ADMIN_PASSWORD: ${{ secrets.SSL_ADMIN_PASSWORD }}
-                SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
             run: |
-                docker compose up -d --build
+                docker compose up -d --build || (docker compose logs database && exit 1)
                 echo "Waiting for Dashboard (:8501)..."
                 timeout 60 bash -c 'until curl -sf http://localhost:8501/_stcore/health > /dev/null; do sleep 2; done'
                 echo "Waiting for Backend HTTPS (:8080)..."
