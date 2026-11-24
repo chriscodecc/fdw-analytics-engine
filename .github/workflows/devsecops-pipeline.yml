@@ -71,7 +71,6 @@ jobs:
                 --metrics=off 
                 --verbose
 
-
     # Gate 4
     build-and-test:
         name: Build & Test
@@ -167,5 +166,50 @@ jobs:
                 ignore-unfixed: true
                 severity: 'HIGH,CRITICAL'
                 skip-setup-trivy: true
-        
-        
+       
+    # Gate 6
+    zap_scan: 
+        name: DAST Security Scan (OWASP ZAP)
+        #needs: [docker]
+        runs-on: ubuntu-24.04
+        steps:
+        -   name: checkout repository
+            uses: actions/checkout@v4
+            with:
+                submodules: true
+
+        -   name: Start application stack
+            env: 
+                APP_API_KEY: "ci-dast-test-key"
+                DB_USER: "ci_user"
+                DB_PASSWORD: "ci_password"
+                SPRING_DATASOURCE_USERNAME: "ci_user"
+                SPRING_DATASOURCE_PASSWORD: "ci_password"
+                SSL_ADMIN_PASSWORD: ${{ secrets.SSL_ADMIN_PASSWORD }}
+                SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
+            run: |
+                docker compose up -d --build
+                echo "Waiting for Dashboard (:8501)..."
+                timeout 60 bash -c 'until curl -sf http://localhost:8501/_stcore/health > /dev/null; do sleep 2; done'
+                echo "Waiting for Backend HTTPS (:8080)..."
+                timeout 60 bash -c 'until curl -sk -o /dev/null https://localhost:8080/api/v1/analytics; do sleep 2; done'
+
+        -   name: ZAP Scan - Dashboard
+            uses: zaproxy/action-baseline@v0.15.0
+            with:
+                target: 'http://localhost:8501'
+                allow_issue_writing: false
+
+        -   name: ZAP Scan - Backend API
+            uses: zaproxy/action-api-scan@v0.10.0
+            env:
+                ZAP_AUTH_HEADER: API_KEY
+                ZAP_AUTH_HEADER_VALUE: "ci-dast-test-key"
+            with:
+                target: 'https://localhost:8080/api/v1/analytics'
+                allow_issue_writing: false
+
+        -   name: Tear down stack
+            if: always()
+            run: docker compose down -v
+
