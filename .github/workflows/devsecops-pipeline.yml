@@ -105,7 +105,6 @@ jobs:
             uses: actions/checkout@v4
             with:
                 submodules: true
-  
 
         -   name: Set up Docker Buildx
             uses: docker/setup-buildx-action@v4
@@ -115,7 +114,8 @@ jobs:
             with:
                 context: "."
                 push: false
-                tags: fwd-backend:${{ github.sha }}
+                tags: fdw-backend:${{ github.sha }}
+                load: true
 
         -   name: Build and push FinDataWarehouse
             uses: docker/build-push-action@v7
@@ -123,10 +123,46 @@ jobs:
                 context: "./FinDataWarehouse"
                 push: false
                 tags: fwd-etl:${{ github.sha }}
+                load: true
 
         -   name: Build and push dashboard
             uses: docker/build-push-action@v7
             with:
                 context: "./dashboard"
                 push: false
-                tags: fwd-dashboard:${{ github.sha }}
+                tags: fdw-dashboard:${{ github.sha }}
+                load: true
+
+        -   name: Image Vulnerability Scanning - backend
+            uses: aquasecurity/trivy-action@0.35.0
+            with:
+                scan-type: 'image'
+                image-ref: fdw-backend:${{ github.sha }} 
+                format: 'table'
+                exit-code: '1'
+                ignore-unfixed: true
+                severity: 'HIGH,CRITICAL'
+        
+        -   name: Image Vulnerability Scanning - etl
+            uses: aquasecurity/trivy-action@0.35.0
+            with:
+                scan-type: 'image'
+                image-ref: fdw-etl:${{ github.sha }} 
+                format: 'table'
+                exit-code: '1'
+                ignore-unfixed: true
+                severity: 'HIGH,CRITICAL'
+                skip-setup-trivy: true
+
+        -   name: Image Vulnerability Scanning - dashboard
+            uses: aquasecurity/trivy-action@0.35.0
+            with:
+                scan-type: 'image'
+                image-ref: fdw-dashboard:${{ github.sha }} 
+                format: 'table'
+                exit-code: '1'
+                ignore-unfixed: true
+                severity: 'HIGH,CRITICAL'
+                skip-setup-trivy: true
+        
+        
