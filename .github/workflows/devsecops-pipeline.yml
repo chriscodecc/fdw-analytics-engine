@@ -123,6 +123,7 @@ jobs:
                 push: false
                 tags: fdw-etl:${{ github.sha }}
                 load: true
+                no-cache: true
 
         -   name: Build and push dashboard
             uses: docker/build-push-action@v7
