@@ -1,0 +1,42 @@
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    gcc \
+    python3-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/* 
+
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+FROM python:3.12-slim
+WORKDIR /app
+
+# --- NEU: User 'vscode' anlegen ---
+RUN apt-get update && \
+    apt-get dist-upgrade -y && \
+    apt-get install -y --no-install-recommends libzstd1 && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd --gid 1000 vscode && \
+    useradd --uid 1000 --gid 1000 -m vscode
+
+RUN apt-get update && apt-get install -y --no-install-recommends libpq5 && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /root/.local /home/vscode/.local
+
+RUN chown -R vscode:vscode /home/vscode/.local 
+RUN groupadd -g 999 docker_host \
+    && usermod -aG docker_host vscode
+
+COPY src/ ./src/
+COPY .streamlit/ ./.streamlit/
+COPY app.py .
+
+ENV PATH=/home/vscode/.local/bin:$PATH
+ENV PYTHONUNBUFFERED=1
+
+RUN mkdir -p /app/logs && chmod 777 /app/logs
+USER vscode
+
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
