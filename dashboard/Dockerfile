@@ -17,6 +17,7 @@ WORKDIR /app
 # --- NEU: User 'vscode' anlegen ---
 RUN apt-get update && \
     apt-get dist-upgrade -y && \
+    apt-get install -y --no-install-recommends libzstd1 && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd --gid 1000 vscode && \
     useradd --uid 1000 --gid 1000 -m vscode
