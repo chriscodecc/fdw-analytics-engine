@@ -132,6 +132,7 @@ jobs:
                 push: false
                 tags: fdw-dashboard:${{ github.sha }}
                 load: true
+                no-cache: true
 
         -   name: Image Vulnerability Scanning - backend
             uses: aquasecurity/trivy-action@0.35.0

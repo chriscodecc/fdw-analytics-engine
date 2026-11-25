@@ -15,8 +15,11 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # --- NEU: User 'vscode' anlegen ---
-RUN groupadd --gid 1000 vscode \
-    && useradd --uid 1000 --gid 1000 -m vscode 
+RUN apt-get update && \
+    apt-get dist-upgrade -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd --gid 1000 vscode && \
+    useradd --uid 1000 --gid 1000 -m vscode
 
 RUN apt-get update && apt-get install -y --no-install-recommends libpq5 && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /root/.local /home/vscode/.local
