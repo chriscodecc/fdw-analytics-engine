@@ -60,4 +60,10 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter{
         }
         filterChain.doFilter(request, response);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.equals("/actuator/health") || path.equals("/actuator/prometheus");
+    }
 }

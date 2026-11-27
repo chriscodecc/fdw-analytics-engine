@@ -23,6 +23,7 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      
     environment:
       DB_HOST: database
       DB_PORT: 5432
@@ -52,6 +53,31 @@ services:
       BACKEND_URL: https://backend:8081
     depends_on:
       - backend
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fdw-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - backend
+
+  nagios:
+    image: jasonrivers/nagios:latest
+    container_name: fdw-nagios
+    ports:
+      - "8082:80"
+    environment:
+      - NAGIOSADMIN_USER=${NAGIOSADMIN_USER}
+      - NAGIOSADMIN_PASS=${NAGIOSADMIN_PASS}
+    volumes:
+      - ./monitoring/nagios/fdw-backend.cfg:/opt/nagios/etc/conf.d/fdw-backend.cfg:ro
+      - ./monitoring/nagios/check_prom_heap.sh:/opt/nagios/libexec/check_prom_heap.sh:ro
+    depends_on:
+      - backend
+      - prometheus
     
 
 volumes:
