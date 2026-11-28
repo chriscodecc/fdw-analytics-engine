@@ -82,3 +82,21 @@ HTTPS Warning: Since the application uses a self-signed PKCS12 keystore (keystor
 
 * **Spring Security Logging:** Debug logs for Spring Security and FilterChainProxy are enabled by default for local development (logging.level.org.springframework.security=DEBUG).
 * **Testcontainers Support:** Configured for Docker-in-Docker / Host gateway communication via TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal.
+
+
+## Monitoring & Observability
+
+System health and performance monitoring follow a pull-based observability architecture centered on `fdw-backend` as the telemetry node between PostgreSQL and the Streamlit dashboard.
+
+### Architecture
+
+```text
+[ PostgreSQL (database:5432) ]
+         ▲
+         │ JDBC isValid()
+[ fdw-backend (backend:8081) ]
+   ├── /actuator/health      ◀──(60s check_http)──── [ Nagios (:8082) ]
+   └── /actuator/prometheus  ◀──(15s scrape)──────── [ Prometheus (:9090) ]
+                                                            ▲
+                                                            │ (60s PromQL query)
+                                                     [ check_prom_heap.sh ]

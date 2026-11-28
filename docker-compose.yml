@@ -75,6 +75,7 @@ services:
     volumes:
       - ./monitoring/nagios/fdw-backend.cfg:/opt/nagios/etc/conf.d/fdw-backend.cfg:ro
       - ./monitoring/nagios/check_prom_heap.sh:/opt/nagios/libexec/check_prom_heap.sh:ro
+      - ./monitoring/nagios/check_prom_security.py:/opt/nagios/libexec/check_prom_security.py:ro
     depends_on:
       - backend
       - prometheus
